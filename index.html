@@ -218,7 +218,7 @@
               <span style="font-size: 0.85rem;">Readme Quality</span>
               <span class="metric-value" id="val-readme">80%</span>
             </div>
-            <input type="range" id="slide-readme" min="0" max="100" value="80" oninput="updateMetrics()">
+            <input type="range" id="slide-readme" min="0" max="100" value="80" oninput="updateLabel('readme', this.value)" onchange="updateMetrics()">
           </div>
 
           <div class="slider-group">
@@ -226,7 +226,7 @@
               <span style="font-size: 0.85rem;">Test Coverage Ratio</span>
               <span class="metric-value" id="val-test">45%</span>
             </div>
-            <input type="range" id="slide-test" min="0" max="100" value="45" oninput="updateMetrics()">
+            <input type="range" id="slide-test" min="0" max="100" value="45" oninput="updateLabel('test', this.value)" onchange="updateMetrics()">
           </div>
 
           <div class="slider-group">
@@ -234,7 +234,7 @@
               <span style="font-size: 0.85rem;">Commit Hygiene</span>
               <span class="metric-value" id="val-commit">70%</span>
             </div>
-            <input type="range" id="slide-commit" min="0" max="100" value="70" oninput="updateMetrics()">
+            <input type="range" id="slide-commit" min="0" max="100" value="70" oninput="updateLabel('commit', this.value)" onchange="updateMetrics()">
           </div>
 
           <div class="slider-group">
@@ -242,7 +242,7 @@
               <span style="font-size: 0.85rem;">Collaboration Index</span>
               <span class="metric-value" id="val-collab">65%</span>
             </div>
-            <input type="range" id="slide-collab" min="0" max="100" value="65" oninput="updateMetrics()">
+            <input type="range" id="slide-collab" min="0" max="100" value="65" oninput="updateLabel('collab', this.value)" onchange="updateMetrics()">
           </div>
         </div>
       </div>
@@ -259,8 +259,18 @@
       </div>
     </div>
 
-    <!-- Right Side: Main Panels and Visualization Grid -->
-    <div class="main-panel-grid">
+      <!-- Local Zip Code File Drop Zone Card [NEW feature] -->
+      <div class="card" style="display: flex; flex-direction: column; justify-content: center; min-height: 250px;">
+        <h3 style="margin-bottom: 1rem; color: var(--text-secondary); font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="file-archive" style="color: var(--accent-secondary);"></i> Offline Code Ingestion (.ZIP)
+        </h3>
+        <div id="drop-zone" style="border: 2px dashed rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 2rem 1.5rem; text-align: center; cursor: pointer; transition: background 0.2s;" ondragover="event.preventDefault(); this.style.borderColor='var(--accent-primary)';" ondragleave="this.style.borderColor='rgba(255,255,255,0.15)';" ondrop="handleZipDrop(event)">
+          <i data-lucide="upload-cloud" style="width: 36px; height: 36px; color: var(--text-muted); margin-bottom: 0.75rem;"></i>
+          <p style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem;">Drag & drop your local project ZIP file here</p>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Parses file tree headers offline</span>
+        </div>
+      </div>
+
       <!-- Big Score Overview Card -->
       <div class="card" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; min-height: 250px;">
         <h3 style="margin-bottom: 1rem; color: var(--text-secondary); font-size: 1rem; font-weight: 600;">PORTFOLIO QUALITY SCORE</h3>
@@ -299,6 +309,27 @@
           </div>
           <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
             <div style="height: 100%; width: 94.3%; background: var(--accent-success); border-radius: 3px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recruiter Filter Thresholds Simulator Panel [NEW feature] -->
+      <div class="card">
+        <h3 style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="gauge" style="color: var(--accent-primary);"></i> Recruiters' Cutoff Thresholds
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 0.8rem; font-size: 0.85rem; color: var(--text-secondary);">
+          <div style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color);">
+            <span>Tier 1 (FAANG / Big Tech)</span>
+            <span style="font-weight: 700; color: var(--accent-secondary);">Cutoff: 85%</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color);">
+            <span>Tier 2 (Mid-Sized / Series A)</span>
+            <span style="font-weight: 700; color: var(--accent-success);">Cutoff: 65%</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>Tier 3 (Service / Consulting)</span>
+            <span style="font-weight: 700; color: var(--accent-warning);">Cutoff: 45%</span>
           </div>
         </div>
       </div>
@@ -445,13 +476,18 @@
       }
     });
 
+    function updateLabel(metric, val) {
+      document.getElementById('val-' + metric).innerText = val + '%';
+    }
+
     // Scoring math implementation
-    function updateMetrics() {
+    async function updateMetrics() {
       // Get values from sliders
       const readme = parseInt(document.getElementById('slide-readme').value);
       const test = parseInt(document.getElementById('slide-test').value);
       const commit = parseInt(document.getElementById('slide-commit').value);
       const collab = parseInt(document.getElementById('slide-collab').value);
+      const username = document.getElementById('github-user').value || 'candidate';
 
       // Update text values next to sliders
       document.getElementById('val-readme').innerText = readme + '%';
@@ -459,36 +495,109 @@
       document.getElementById('val-commit').innerText = commit + '%';
       document.getElementById('val-collab').innerText = collab + '%';
 
-      // Apply scoring formulas
-      // Portfolio Quality Score: 40% Readme + 30% Test + 30% Commit
-      const pqs = Math.round((readme * 0.4) + (test * 0.3) + (commit * 0.3));
-      
-      // Update Radial Graph display
-      document.getElementById('lbl-pqs').innerText = pqs;
-      
-      // Update circular dash offset (Circumference is 364.4)
-      const circle = document.getElementById('radial-pqs');
-      const circumference = 364.4;
-      const offset = circumference - (pqs / 100) * circumference;
-      circle.style.strokeDashoffset = offset;
+      try {
+        // Send inputs to backend scoring engine API
+        const response = await fetch('http://localhost:5000/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username,
+            readmeScore: readme,
+            testScore: test,
+            commitScore: commit,
+            collabScore: collab
+          })
+        });
 
-      // Update Verdict status
-      const verdictEl = document.getElementById('recruiter-status');
-      if (pqs >= 65) {
-        verdictEl.innerHTML = '<i data-lucide="check-circle" style="width: 20px; height: 20px;"></i> Auto-Pass Selected';
-        verdictEl.style.color = 'var(--accent-success)';
-      } else if (pqs >= 45) {
-        verdictEl.innerHTML = '<i data-lucide="help-circle" style="width: 20px; height: 20px;"></i> Manual Review Queue';
-        verdictEl.style.color = 'var(--accent-warning)';
-      } else {
-        verdictEl.innerHTML = '<i data-lucide="x-circle" style="width: 20px; height: 20px;"></i> Auto-Reject Triggered';
-        verdictEl.style.color = 'var(--accent-danger)';
+        if (response.ok) {
+          const result = await response.json();
+          
+          // Update radial indicator and labels
+          const pqs = result.portfolioQualityScore;
+          document.getElementById('lbl-pqs').innerText = pqs;
+          
+          const circle = document.getElementById('radial-pqs');
+          const circumference = 364.4;
+          const offset = circumference - (pqs / 100) * circumference;
+          circle.style.strokeDashoffset = offset;
+
+          // Update Verdict
+          const verdictEl = document.getElementById('recruiter-status');
+          if (result.recruiterVerdict === 'Auto-Pass') {
+            verdictEl.innerHTML = '<i data-lucide="check-circle" style="width: 20px; height: 20px;"></i> Auto-Pass Selected';
+            verdictEl.style.color = 'var(--accent-success)';
+          } else if (result.recruiterVerdict === 'Manual Review') {
+            verdictEl.innerHTML = '<i data-lucide="help-circle" style="width: 20px; height: 20px;"></i> Manual Review Queue';
+            verdictEl.style.color = 'var(--accent-warning)';
+          } else {
+            verdictEl.innerHTML = '<i data-lucide="x-circle" style="width: 20px; height: 20px;"></i> Auto-Reject Triggered';
+            verdictEl.style.color = 'var(--accent-danger)';
+          }
+          lucide.createIcons();
+
+          // Dynamic matching list update
+          const roadmapEl = document.getElementById('roadmap-items');
+          let roadmapHTML = '';
+          result.matches.forEach((match, idx) => {
+            const colors = idx === 0 ? ['var(--accent-primary)', 'rgba(99, 102, 241, 0.1)'] : 
+                           (idx === 1 ? ['var(--accent-secondary)', 'rgba(6, 182, 212, 0.1)'] : ['var(--accent-warning)', 'rgba(245, 158, 11, 0.1)']);
+            
+            roadmapHTML += `
+              <div style="display: flex; gap: 1rem; border-bottom: ${idx < result.matches.length - 1 ? '1px solid var(--border-color)' : 'none'}; padding-bottom: 1rem; align-items: flex-start; margin-top: ${idx > 0 ? '1rem' : '0'}">
+                <div style="background: ${colors[1]}; border: 1px dashed ${colors[0]}; border-radius: 8px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                  <span style="font-weight: 700; color: ${colors[0]};">${idx + 1}</span>
+                </div>
+                <div style="flex-grow: 1;">
+                  <h4 style="font-size: 0.95rem; margin-bottom: 0.25rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span>Target Repository: <strong>${match.name}</strong></span>
+                    <span class="match-pill">${match.matchPercentage}% Match</span>
+                  </h4>
+                  <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 0.25rem;">
+                    ${match.description}
+                  </p>
+                  <p style="font-size: 0.8rem; color: var(--text-muted);">
+                    <strong>Missing Skills:</strong> ${match.missingSkills.length > 0 ? match.missingSkills.join(', ') : 'None! Ready to contribute.'}
+                  </p>
+                </div>
+              </div>
+            `;
+          });
+          roadmapEl.innerHTML = roadmapHTML;
+
+          // Sync chart visual profiles matching JS updates
+          skillsChart.data.datasets[0].data = [readme, (readme + collab)/2, commit, test];
+          skillsChart.update();
+        }
+      } catch (err) {
+        console.error('Error contacting backend scoring API:', err);
       }
-      lucide.createIcons();
+    }
+
+    function handleZipDrop(event) {
+      event.preventDefault();
+      const dropZone = document.getElementById('drop-zone');
+      dropZone.style.borderColor = 'rgba(255,255,255,0.15)';
       
-      // Sync chart dataset dynamically matching simulated skills
-      skillsChart.data.datasets[0].data = [readme, (readme + collab)/2, commit, test];
-      skillsChart.update();
+      const files = event.dataTransfer.files;
+      if (files.length > 0 && files[0].name.endsWith('.zip')) {
+        dropZone.innerHTML = `
+          <i class="lucide-file-archive" data-lucide="file-archive" style="width: 36px; height: 36px; color: var(--accent-success); margin-bottom: 0.75rem;"></i>
+          <p style="font-size: 0.85rem; font-weight: 500; color: var(--accent-success);">${files[0].name}</p>
+          <span style="font-size: 0.75rem; color: var(--text-secondary);">Analyzing file headers...</span>
+        `;
+        lucide.createIcons();
+        
+        // Mocking local zip metric parsing offsets
+        setTimeout(() => {
+          document.getElementById('slide-readme').value = 90; // ZIP projects usually have a README
+          document.getElementById('slide-test').value = 60; // ZIP codebase contains tests folder
+          document.getElementById('slide-commit').value = 85; // Clean Git headers
+          updateLabel('readme', 90);
+          updateLabel('test', 60);
+          updateLabel('commit', 85);
+          updateMetrics();
+        }, 1200);
+      }
     }
 
     function simulateScan() {
@@ -506,9 +615,19 @@
         document.getElementById('slide-test').value = Math.floor(Math.random() * 60) + 20;
         document.getElementById('slide-commit').value = Math.floor(Math.random() * 50) + 40;
         document.getElementById('slide-collab').value = Math.floor(Math.random() * 50) + 30;
+        updateLabel('readme', document.getElementById('slide-readme').value);
+        updateLabel('test', document.getElementById('slide-test').value);
+        updateLabel('commit', document.getElementById('slide-commit').value);
+        updateLabel('collab', document.getElementById('slide-collab').value);
         updateMetrics();
       }, 1000);
     }
+
+    // Trigger initial calculation load
+    window.addEventListener('DOMContentLoaded', () => {
+      updateMetrics();
+    });
+
 
     // Add spinner keyframes keying spin animation
     const styleSheet = document.createElement("style");
