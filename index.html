@@ -480,40 +480,100 @@
       document.getElementById('val-' + metric).innerText = val + '%';
     }
 
+    // Debounced and throttled rendering key to prevent paint flickering
+    let renderPending = false;
+
     // Scoring math implementation
-    async function updateMetrics() {
-      // Get values from sliders
-      const readme = parseInt(document.getElementById('slide-readme').value);
-      const test = parseInt(document.getElementById('slide-test').value);
-      const commit = parseInt(document.getElementById('slide-commit').value);
-      const collab = parseInt(document.getElementById('slide-collab').value);
-      const username = document.getElementById('github-user').value || 'candidate';
+    function updateMetrics() {
+      if (renderPending) return;
+      renderPending = true;
 
-      // Update text values next to sliders
-      document.getElementById('val-readme').innerText = readme + '%';
-      document.getElementById('val-test').innerText = test + '%';
-      document.getElementById('val-commit').innerText = commit + '%';
-      document.getElementById('val-collab').innerText = collab + '%';
+      window.requestAnimationFrame(async () => {
+        // Get values from sliders
+        const readme = parseInt(document.getElementById('slide-readme').value);
+        const test = parseInt(document.getElementById('slide-test').value);
+        const commit = parseInt(document.getElementById('slide-commit').value);
+        const collab = parseInt(document.getElementById('slide-collab').value);
+        const username = document.getElementById('github-user').value || 'candidate';
 
-      try {
-        // Send inputs to backend scoring engine API
-        const response = await fetch('http://localhost:5000/api/analyze', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            username,
-            readmeScore: readme,
-            testScore: test,
-            commitScore: commit,
-            collabScore: collab
-          })
-        });
+        try {
+          // Send inputs to backend scoring engine API
+          const response = await fetch('http://localhost:5000/api/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username,
+              readmeScore: readme,
+              testScore: test,
+              commitScore: commit,
+              collabScore: collab
+            })
+          });
 
-        if (response.ok) {
-          const result = await response.json();
+          if (response.ok) {
+            const result = await response.json();
+            
+            // Update radial indicator and labels
+            const pqs = result.portfolioQualityScore;
+            document.getElementById('lbl-pqs').innerText = pqs;
+            
+            const circle = document.getElementById('radial-pqs');
+            const circumference = 364.4;
+            const offset = circumference - (pqs / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+
+            // Update Verdict
+            const verdictEl = document.getElementById('recruiter-status');
+            if (result.recruiterVerdict === 'Auto-Pass') {
+              verdictEl.innerHTML = '<i data-lucide="check-circle" style="width: 20px; height: 20px;"></i> Auto-Pass Selected';
+              verdictEl.style.color = 'var(--accent-success)';
+            } else if (result.recruiterVerdict === 'Manual Review') {
+              verdictEl.innerHTML = '<i data-lucide="help-circle" style="width: 20px; height: 20px;"></i> Manual Review Queue';
+              verdictEl.style.color = 'var(--accent-warning)';
+            } else {
+              verdictEl.innerHTML = '<i data-lucide="x-circle" style="width: 20px; height: 20px;"></i> Auto-Reject Triggered';
+              verdictEl.style.color = 'var(--accent-danger)';
+            }
+            lucide.createIcons();
+
+            // Dynamic matching list update
+            const roadmapEl = document.getElementById('roadmap-items');
+            let roadmapHTML = '';
+            result.matches.forEach((match, idx) => {
+              const colors = idx === 0 ? ['var(--accent-primary)', 'rgba(99, 102, 241, 0.1)'] : 
+                             (idx === 1 ? ['var(--accent-secondary)', 'rgba(6, 182, 212, 0.1)'] : ['var(--accent-warning)', 'rgba(245, 158, 11, 0.1)']);
+              
+              roadmapHTML += `
+                <div style="display: flex; gap: 1rem; border-bottom: ${idx < result.matches.length - 1 ? '1px solid var(--border-color)' : 'none'}; padding-bottom: 1rem; align-items: flex-start; margin-top: ${idx > 0 ? '1rem' : '0'}">
+                  <div style="background: ${colors[1]}; border: 1px dashed ${colors[0]}; border-radius: 8px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <span style="font-weight: 700; color: ${colors[0]};">${idx + 1}</span>
+                  </div>
+                  <div style="flex-grow: 1;">
+                    <h4 style="font-size: 0.95rem; margin-bottom: 0.25rem; display: flex; justify-content: space-between; align-items: center;">
+                      <span>Target Repository: <strong>${match.name}</strong></span>
+                      <span class="match-pill">${match.matchPercentage}% Match</span>
+                    </h4>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 0.25rem;">
+                      ${match.description}
+                    </p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">
+                      <strong>Missing Skills:</strong> ${match.missingSkills.length > 0 ? match.missingSkills.join(', ') : 'None! Ready to contribute.'}
+                    </p>
+                  </div>
+                </div>
+              `;
+            });
+            roadmapEl.innerHTML = roadmapHTML;
+
+            // Sync chart visual profiles matching JS updates
+            skillsChart.data.datasets[0].data = [readme, (readme + collab)/2, commit, test];
+            skillsChart.update();
+          }
+        } catch (err) {
+          console.warn('Scoring API server is unreachable. Running local calculation fallback...', err);
           
-          // Update radial indicator and labels
-          const pqs = result.portfolioQualityScore;
+          // Local fallback calculation logic
+          const pqs = Math.round((readme * 0.4) + (test * 0.3) + (commit * 0.3));
           document.getElementById('lbl-pqs').innerText = pqs;
           
           const circle = document.getElementById('radial-pqs');
@@ -521,12 +581,11 @@
           const offset = circumference - (pqs / 100) * circumference;
           circle.style.strokeDashoffset = offset;
 
-          // Update Verdict
           const verdictEl = document.getElementById('recruiter-status');
-          if (result.recruiterVerdict === 'Auto-Pass') {
+          if (pqs >= 65) {
             verdictEl.innerHTML = '<i data-lucide="check-circle" style="width: 20px; height: 20px;"></i> Auto-Pass Selected';
             verdictEl.style.color = 'var(--accent-success)';
-          } else if (result.recruiterVerdict === 'Manual Review') {
+          } else if (pqs >= 45) {
             verdictEl.innerHTML = '<i data-lucide="help-circle" style="width: 20px; height: 20px;"></i> Manual Review Queue';
             verdictEl.style.color = 'var(--accent-warning)';
           } else {
@@ -535,42 +594,13 @@
           }
           lucide.createIcons();
 
-          // Dynamic matching list update
-          const roadmapEl = document.getElementById('roadmap-items');
-          let roadmapHTML = '';
-          result.matches.forEach((match, idx) => {
-            const colors = idx === 0 ? ['var(--accent-primary)', 'rgba(99, 102, 241, 0.1)'] : 
-                           (idx === 1 ? ['var(--accent-secondary)', 'rgba(6, 182, 212, 0.1)'] : ['var(--accent-warning)', 'rgba(245, 158, 11, 0.1)']);
-            
-            roadmapHTML += `
-              <div style="display: flex; gap: 1rem; border-bottom: ${idx < result.matches.length - 1 ? '1px solid var(--border-color)' : 'none'}; padding-bottom: 1rem; align-items: flex-start; margin-top: ${idx > 0 ? '1rem' : '0'}">
-                <div style="background: ${colors[1]}; border: 1px dashed ${colors[0]}; border-radius: 8px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                  <span style="font-weight: 700; color: ${colors[0]};">${idx + 1}</span>
-                </div>
-                <div style="flex-grow: 1;">
-                  <h4 style="font-size: 0.95rem; margin-bottom: 0.25rem; display: flex; justify-content: space-between; align-items: center;">
-                    <span>Target Repository: <strong>${match.name}</strong></span>
-                    <span class="match-pill">${match.matchPercentage}% Match</span>
-                  </h4>
-                  <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 0.25rem;">
-                    ${match.description}
-                  </p>
-                  <p style="font-size: 0.8rem; color: var(--text-muted);">
-                    <strong>Missing Skills:</strong> ${match.missingSkills.length > 0 ? match.missingSkills.join(', ') : 'None! Ready to contribute.'}
-                  </p>
-                </div>
-              </div>
-            `;
-          });
-          roadmapEl.innerHTML = roadmapHTML;
-
           // Sync chart visual profiles matching JS updates
           skillsChart.data.datasets[0].data = [readme, (readme + collab)/2, commit, test];
           skillsChart.update();
+        } finally {
+          renderPending = false;
         }
-      } catch (err) {
-        console.error('Error contacting backend scoring API:', err);
-      }
+      });
     }
 
     function handleZipDrop(event) {
