@@ -9,83 +9,60 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static(__dirname));
 
-// Initialize SQLite database file in current workspace
+// Initialize SQLite database
 const dbDir = path.join(__dirname, 'data');
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir);
-}
+if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir);
 const dbPath = path.join(dbDir, 'devlens.db');
 const db = new sqlite3.Database(dbPath);
 
 db.serialize(() => {
-  // Table 1: Users/Developers
+  // Table 1: Scan History — stores every scan with timestamp
   db.run(`
-    CREATE TABLE IF NOT EXISTS users (
+    CREATE TABLE IF NOT EXISTS scan_history (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      username TEXT UNIQUE NOT NULL,
-      portfolio_quality_score INTEGER DEFAULT 0,
-      collaboration_score INTEGER DEFAULT 0,
-      test_ratio_percentage INTEGER DEFAULT 0,
-      readme_length_percentage INTEGER DEFAULT 0,
-      commit_hygiene_percentage INTEGER DEFAULT 0,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      username TEXT NOT NULL,
+      pqs_score INTEGER DEFAULT 0,
+      doc_score INTEGER DEFAULT 0,
+      test_score INTEGER DEFAULT 0,
+      commit_score INTEGER DEFAULT 0,
+      collab_score INTEGER DEFAULT 0,
+      repos_scanned INTEGER DEFAULT 0,
+      languages TEXT DEFAULT '[]',
+      tier TEXT DEFAULT '',
+      scanned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
-  // Table 2: Simulated Target Open-Source Projects
+  // Table 2: Target Open-Source Repositories for Jaccard matching
   db.run(`
     CREATE TABLE IF NOT EXISTS repositories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT UNIQUE NOT NULL,
       description TEXT,
       primary_language TEXT NOT NULL,
-      secondary_languages TEXT, -- JSON array of strings
-      difficulty TEXT CHECK(difficulty IN ('Beginner', 'Intermediate', 'Advanced')),
-      stars INTEGER DEFAULT 0
+      secondary_languages TEXT,
+      difficulty TEXT CHECK(difficulty IN ('Beginner', 'Intermediate', 'Advanced', 'Expert')),
+      stars TEXT DEFAULT '0'
     )
   `);
 
-  // Seed repositories if database is empty
-  db.all('SELECT count(*) as count FROM repositories', [], (err, rows) => {
-    if (rows && rows[0].count === 0) {
-      const stmt = db.prepare(`
-        INSERT INTO repositories (name, description, primary_language, secondary_languages, difficulty, stars)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `);
-      
-      stmt.run(
-        'axios/axios', 
-        'Promise based HTTP client for the browser and node.js', 
-        'JavaScript', 
-        JSON.stringify(['TypeScript', 'HTML']), 
-        'Beginner', 
-        104000
-      );
-      stmt.run(
-        'expressjs/express', 
-        'Fast, unopinionated, minimalist web framework for node.', 
-        'JavaScript', 
-        JSON.stringify(['HTML', 'CSS']), 
-        'Intermediate', 
-        62000
-      );
-      stmt.run(
-        'pandas-dev/pandas', 
-        'Flexible and powerful data analysis / manipulation library for Python', 
-        'Python', 
-        JSON.stringify(['C', 'Cython', 'HTML']), 
-        'Advanced', 
-        41000
-      );
-      stmt.run(
-        'facebook/react', 
-        'A declarative, efficient, and flexible JavaScript library for building user interfaces.', 
-        'JavaScript', 
-        JSON.stringify(['TypeScript', 'HTML']), 
-        'Advanced', 
-        224000
-      );
+  // Seed target repositories if empty
+  db.get('SELECT count(*) as count FROM repositories', [], (err, row) => {
+    if (row && row.count === 0) {
+      const stmt = db.prepare(`INSERT INTO repositories (name, description, primary_language, secondary_languages, difficulty, stars) VALUES (?, ?, ?, ?, ?, ?)`);
+      const repos = [
+        ['facebook/react', 'Declarative UI library for building user interfaces', 'JavaScript', '["TypeScript","HTML","CSS"]', 'Advanced', '224k'],
+        ['expressjs/express', 'Fast, minimalist web framework for Node.js', 'JavaScript', '["HTML"]', 'Intermediate', '62k'],
+        ['django/django', 'High-level Python web framework', 'Python', '["HTML","CSS","JavaScript"]', 'Advanced', '78k'],
+        ['rust-lang/rust', 'Systems programming language focused on safety', 'Rust', '["Python","Shell","JavaScript"]', 'Expert', '95k'],
+        ['golang/go', 'The Go programming language', 'Go', '["Assembly","HTML","Shell"]', 'Expert', '121k'],
+        ['vuejs/vue', 'Progressive JavaScript framework', 'JavaScript', '["TypeScript","HTML"]', 'Intermediate', '207k'],
+        ['pallets/flask', 'Lightweight Python web framework', 'Python', '["HTML","CSS"]', 'Beginner', '67k'],
+        ['rails/rails', 'Full-stack Ruby web framework', 'Ruby', '["JavaScript","HTML","CSS"]', 'Advanced', '55k']
+      ];
+      repos.forEach(r => stmt.run(...r));
       stmt.finalize();
     }
   });
@@ -93,90 +70,50 @@ db.serialize(() => {
 
 // --- API Endpoints ---
 
-// Get all target repositories
-app.get('/api/repositories', (req, res) => {
-  db.all('SELECT * FROM repositories', [], (err, rows) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
+// Save scan result to history
+app.post('/api/scan', (req, res) => {
+  const { username, pqs_score, doc_score, test_score, commit_score, collab_score, repos_scanned, languages, tier } = req.body;
+  if (!username) return res.status(400).json({ error: 'Username required' });
+  
+  db.run(`INSERT INTO scan_history (username, pqs_score, doc_score, test_score, commit_score, collab_score, repos_scanned, languages, tier) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [username, pqs_score || 0, doc_score || 0, test_score || 0, commit_score || 0, collab_score || 0, repos_scanned || 0, JSON.stringify(languages || []), tier || ''],
+    function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ id: this.lastID, message: 'Scan saved' });
     }
-    const repos = rows.map(r => ({
-      ...r,
-      secondary_languages: JSON.parse(r.secondary_languages || '[]')
-    }));
-    res.json(repos);
+  );
+});
+
+// Get scan history for a user (or all users)
+app.get('/api/history', (req, res) => {
+  const { username } = req.query;
+  const query = username
+    ? 'SELECT * FROM scan_history WHERE username = ? ORDER BY scanned_at DESC LIMIT 20'
+    : 'SELECT * FROM scan_history ORDER BY scanned_at DESC LIMIT 50';
+  const params = username ? [username] : [];
+  
+  db.all(query, params, (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows.map(r => ({ ...r, languages: JSON.parse(r.languages || '[]') })));
   });
 });
 
-// Run portfolio analysis simulation
-app.post('/api/analyze', (req, res) => {
-  const { username, readmeScore, testScore, commitScore, collabScore } = req.body;
+// Get all target repositories
+app.get('/api/repositories', (req, res) => {
+  db.all('SELECT * FROM repositories', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows.map(r => ({ ...r, secondary_languages: JSON.parse(r.secondary_languages || '[]') })));
+  });
+});
 
-  if (!username) {
-    return res.status(400).json({ error: 'Username is required' });
-  }
-
-  // Portfolio Quality Score formula: 40% Readme + 30% Test + 30% Commit
-  const pqs = Math.round((readmeScore * 0.4) + (testScore * 0.3) + (commitScore * 0.3));
-
-  // Store user calculations in the database
-  db.run(`
-    INSERT INTO users (username, portfolio_quality_score, collaboration_score, test_ratio_percentage, readme_length_percentage, commit_hygiene_percentage)
-    VALUES (?, ?, ?, ?, ?, ?)
-    ON CONFLICT(username) DO UPDATE SET
-      portfolio_quality_score = excluded.portfolio_quality_score,
-      collaboration_score = excluded.collaboration_score,
-      test_ratio_percentage = excluded.test_ratio_percentage,
-      readme_length_percentage = excluded.readme_length_percentage,
-      commit_hygiene_percentage = excluded.commit_hygiene_percentage
-  `, [username, pqs, collabScore, testScore, readmeScore, commitScore], function(err) {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-
-    // Perform Matchmaking calculations based on Jaccard Similarity vectors
-    db.all('SELECT * FROM repositories', [], (err, repos) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-
-      // Developer stack profile
-      const developerLanguages = ['JavaScript', 'HTML'];
-      if (commitScore > 60) developerLanguages.push('TypeScript'); // Higher skill unlock
-      if (testScore > 50) developerLanguages.push('Python');
-
-      const matches = repos.map(repo => {
-        const repoLanguages = [repo.primary_language, ...JSON.parse(repo.secondary_languages || '[]')];
-        
-        // Jaccard similarity index math
-        const union = new Set([...developerLanguages, ...repoLanguages]);
-        const intersection = developerLanguages.filter(l => repoLanguages.includes(l));
-        const matchingRatio = intersection.length / union.size;
-        const matchPercentage = Math.round(matchingRatio * 100);
-
-        // Gap detection
-        const missingSkills = repoLanguages.filter(l => !developerLanguages.includes(l));
-
-        return {
-          id: repo.id,
-          name: repo.name,
-          description: repo.description,
-          matchPercentage,
-          missingSkills,
-          difficulty: repo.difficulty
-        };
-      }).sort((a, b) => b.matchPercentage - a.matchPercentage);
-
-      res.json({
-        username,
-        portfolioQualityScore: pqs,
-        collaborationScore: collabScore,
-        recruiterVerdict: pqs >= 65 ? 'Auto-Pass' : (pqs >= 45 ? 'Manual Review' : 'Auto-Reject'),
-        matches
-      });
-    });
+// Get stats summary
+app.get('/api/stats', (req, res) => {
+  db.all('SELECT COUNT(*) as total_scans, COUNT(DISTINCT username) as unique_users, AVG(pqs_score) as avg_pqs FROM scan_history', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows[0]);
   });
 });
 
 app.listen(PORT, () => {
-  console.log(`DevLens Server running on http://localhost:${PORT}`);
+  console.log(`DevLens AI Server running on http://localhost:${PORT}`);
 });

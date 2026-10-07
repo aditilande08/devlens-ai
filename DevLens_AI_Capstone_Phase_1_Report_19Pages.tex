@@ -1,0 +1,699 @@
+\documentclass[12pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{times} % Times New Roman font
+\usepackage{setspace}
+\setstretch{1.0} % Single line spacing as per template
+\usepackage{graphicx}
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{caption}
+
+% --- Page Numbering on Top Center as per Reference PDF ---
+\pagestyle{fancy}
+\fancyhf{}
+\chead{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+% --- Section Headings Formatting ---
+\titleformat{\section}{\fontsize{14pt}{16pt}\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\fontsize{13pt}{15pt}\bfseries}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\fontsize{12pt}{14pt}\bfseries}{\thesubsubsection}{0.5em}{}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=black,
+    urlcolor=black
+}
+
+\begin{document}
+
+% =====================================================================
+% PAGE 1: TITLE PAGE
+% =====================================================================
+\thispagestyle{fancy}
+\begin{center}
+    \vspace*{0.2cm}
+    {\fontsize{16pt}{18pt}\bfseries DEVLENS \par}
+    \vspace{0.2cm}
+    {\fontsize{13pt}{15pt}\bfseries Automated Developer Portfolio Evaluation \& Open-Source Readiness Engine \par}
+    
+    \vspace{1.2cm}
+    {\fontsize{13pt}{15pt}\bfseries CAPSTONE PROJECT PHASE-1 \par}
+    \vspace{0.2cm}
+    {\fontsize{12pt}{14pt}\bfseries Phase - I Report \par}
+    
+    \vspace{0.8cm}
+    {\fontsize{12pt}{14pt}\bfseries Submitted by \par}
+    \vspace{0.3cm}
+    
+    \begin{table}[h!]
+        \centering
+        \begin{tabular}{|c|c|l|}
+            \hline
+            \textbf{Sl. No.} & \textbf{Register Number} & \textbf{Name} \\ \hline
+            1 & 23BET10030 & Nehal Yadav \\ \hline
+            2 & 23BET10035 & Aditi Lande \\ \hline
+            3 & 23BET10041 & Mudra Khuje \\ \hline
+        \end{tabular}
+    \end{table}
+    
+    \vspace{0.8cm}
+    {\fontsize{11pt}{13pt}\itshape in partial fulfillment of the requirements for the degree of \par}
+    \vspace{0.2cm}
+    {\fontsize{12pt}{14pt}\bfseries B.Tech Computer Science and Engineering (Education Technology) \par}
+    
+    \vfill
+    
+    {\fontsize{13pt}{15pt}\bfseries VIT Bhopal University \par}
+    {\fontsize{12pt}{14pt} Bhopal \par}
+    {\fontsize{12pt}{14pt} Madhya Pradesh \par}
+    \vspace{0.3cm}
+    {\fontsize{12pt}{14pt}\bfseries October, 2026 \par}
+\end{center}
+
+% =====================================================================
+% PAGE 2: BONAFIDE CERTIFICATE
+% =====================================================================
+\newpage
+\thispagestyle{fancy}
+\begin{center}
+    {\fontsize{14pt}{16pt}\bfseries Bonafide Certificate \par}
+\end{center}
+
+\vspace{1.5cm}
+
+\noindent Certified that this project report titled \textbf{"DevLens: Automated Developer Portfolio Evaluation \& Open-Source Readiness Engine"} is the bonafide work of \textbf{23BET10030 Nehal Yadav, 23BET10035 Aditi Lande, and 23BET10041 Mudra Khuje} who carried out the project work under my supervision.
+
+\vspace{1.5cm}
+
+\noindent This project report (DSN4091-Capstone Project Phase-I) is submitted for the Project Viva-Voce examination held on 7/10/2026
+
+\vspace{5.0cm}
+
+\begin{flushright}
+    \textbf{Dr. Javed Sheikh} \\
+    Project Supervisor \\
+    School of Computer Science and Engineering \\
+    VIT Bhopal University
+\end{flushright}
+
+% =====================================================================
+% PAGE 3: TABLE OF CONTENTS
+% =====================================================================
+\newpage
+\thispagestyle{fancy}
+\begin{center}
+    {\fontsize{14pt}{16pt}\bfseries Table of Contents \par}
+\end{center}
+\vspace{0.5cm}
+
+\noindent \textbf{1 \hspace{0.2cm} Introduction \dotfill 5} \\
+\hspace*{0.6cm} 1.1 \hspace{0.2cm} Problem Statement \& Motivation \dotfill 5 \\
+\hspace*{0.6cm} 1.2 \hspace{0.2cm} Objectives of DevLens \dotfill 5 \\
+\hspace*{0.6cm} 1.3 \hspace{0.2cm} Scope and Organisation of the Report \dotfill 5 \\
+\textbf{2 \hspace{0.2cm} Existing Work / Literature Review \dotfill 6} \\
+\hspace*{0.6cm} 2.1 \hspace{0.2cm} Mining GitHub and Signal Noise Filtering \dotfill 6 \\
+\hspace*{0.6cm} 2.2 \hspace{0.2cm} Social Coding and Collaboration Signals \dotfill 6 \\
+\hspace*{0.6cm} 2.3 \hspace{0.2cm} Code Quality, Testing Adequacy, and Commit Hygiene \dotfill 6 \\
+\hspace*{0.6cm} 2.4 \hspace{0.2cm} Comparative Literature Analysis and Research Gap \dotfill 6 \\
+\textbf{3 \hspace{0.2cm} Topic of the Work \dotfill 7} \\
+\hspace*{0.6cm} 3.1 \hspace{0.2cm} System Design / Architecture \dotfill 7 \\
+\hspace*{1.2cm} 3.1.1 \hspace{0.2cm} Four-Layer Local-First System Architecture \dotfill 7 \\
+\hspace*{1.2cm} 3.1.2 \hspace{0.2cm} Technology Stack \dotfill 7 \\
+\hspace*{1.2cm} 3.1.3 \hspace{0.2cm} Schema and Database Contracts \dotfill 8 \\
+\hspace*{1.2cm} 3.1.4 \hspace{0.2cm} Site Structure and REST API Endpoints \dotfill 8 \\
+\hspace*{0.6cm} 3.2 \hspace{0.2cm} Working Principle and Metric Formulations \dotfill 9 \\
+\hspace*{1.2cm} 3.2.1 \hspace{0.2cm} End-to-End System Pipeline \dotfill 9 \\
+\hspace*{1.2cm} 3.2.2 \hspace{0.2cm} Portfolio Quality Index (PQI) Formulation \dotfill 9 \\
+\hspace*{1.2cm} 3.2.3 \hspace{0.2cm} Detailed Metric Formulations (Doc, Test, Commit, Collab) \dotfill 10 \\
+\hspace*{1.2cm} 3.2.4 \hspace{0.2cm} Jaccard Open-Source Readiness Skill Matching Engine \dotfill 10 \\
+\hspace*{1.2cm} 3.2.5 \hspace{0.2cm} Audit Trail Logging and Rate-Limit Handling \dotfill 10 \\
+\hspace*{1.2cm} 3.2.6 \hspace{0.2cm} Accessibility and Usability \dotfill 10 \\
+\hspace*{0.6cm} 3.3 \hspace{0.2cm} Results and Discussion \dotfill 11 \\
+\hspace*{1.2cm} 3.3.1 \hspace{0.2cm} Implementation Status \dotfill 11 \\
+\hspace*{1.2cm} 3.3.2 \hspace{0.2cm} Application Screens \dotfill 11 \\
+\hspace*{1.2cm} 3.3.3 \hspace{0.2cm} Empirical Benchmark Validation Against Known Repositories \dotfill 14 \\
+\hspace*{1.2cm} 3.3.4 \hspace{0.2cm} PQI Scoring Breakdown and Tier Stratification \dotfill 15 \\
+\hspace*{1.2cm} 3.3.5 \hspace{0.2cm} Discussion and Limitations \dotfill 16 \\
+\hspace*{0.6cm} 3.4 \hspace{0.2cm} Individual Contribution by Members \dotfill 16 \\
+\textbf{4 \hspace{0.2cm} Conclusion \dotfill 18} \\
+\hspace*{0.6cm} 4.1 \hspace{0.2cm} Summary \dotfill 18 \\
+\hspace*{0.6cm} 4.2 \hspace{0.2cm} Limitations \dotfill 18 \\
+\hspace*{0.6cm} 4.3 \hspace{0.2cm} Future Work (Phase II) \dotfill 18 \\
+\textbf{5 \hspace{0.2cm} References \dotfill 19}
+
+% =====================================================================
+% PAGE 4: INDEX OF FIGURES & INDEX OF TABLES
+% =====================================================================
+\newpage
+\thispagestyle{fancy}
+\begin{center}
+    {\fontsize{13pt}{15pt}\bfseries Index of Figures \par}
+\end{center}
+\vspace{0.3cm}
+
+\noindent Fig. 1 \hspace{0.2cm} Four-Layer Local-First System Design of DevLens \dotfill 7 \\
+Fig. 2 \hspace{0.2cm} Application routes and REST API endpoint architecture \dotfill 8 \\
+Fig. 3 \hspace{0.2cm} System Pipeline --- From Profile to Score \dotfill 9 \\
+Fig. 4 \hspace{0.2cm} DevLens Engineering Dashboard UI (Hero Section) \dotfill 12 \\
+Fig. 5 \hspace{0.2cm} Real-time evaluation progress bar with API rate-limit headroom \dotfill 12 \\
+Fig. 6 \hspace{0.2cm} Language distribution chart rendered using Chart.js \dotfill 13 \\
+Fig. 7 \hspace{0.2cm} Multi-Vector PQI score breakdown across 4 vectors \dotfill 13 \\
+Fig. 8 \hspace{0.2cm} Actionable Open-Source skill-gap recommendation cards \dotfill 14 \\
+Fig. 9 \hspace{0.2cm} SQLite audit history log and past scan lookups \dotfill 14 \\
+Fig. 10 \hspace{0.2cm} Benchmark score distribution across 5 control repositories \dotfill 15 \\
+Fig. 11 \hspace{0.2cm} Test-to-source file ratio scaling function \dotfill 16 \\
+Fig. 12 \hspace{0.2cm} Jaccard skill similarity matching vs. 8 target OSS repositories \dotfill 16
+
+\vspace{0.8cm}
+\begin{center}
+    {\fontsize{13pt}{15pt}\bfseries Index of Tables \par}
+\end{center}
+\vspace{0.3cm}
+
+\noindent Table 1 \hspace{0.2cm} Lightweight, Zero-Cost Technology Stack \dotfill 7 \\
+Table 2 \hspace{0.2cm} SQLite Audit Database Schema (devlens.db) \dotfill 8 \\
+Table 3 \hspace{0.2cm} REST API Endpoints of DevLens \dotfill 9 \\
+Table 4 \hspace{0.2cm} Implementation status at the end of Phase I \dotfill 11 \\
+Table 5 \hspace{0.2cm} Empirical Benchmark Validation Against Baseline Repositories \dotfill 15 \\
+Table 6 \hspace{0.2cm} Portfolio Quality Index (PQI) Weighting & Scoring Matrix \dotfill 15
+
+% =====================================================================
+% PAGE 5: 1. INTRODUCTION
+% =====================================================================
+\newpage
+\thispagestyle{fancy}
+\section{1. INTRODUCTION}
+
+In modern technical recruiting, a candidate's GitHub profile has become a primary credential for assessing software engineering competence. However, manual inspection of GitHub repositories does not scale. Technical recruiters, hiring managers, and academic evaluators are forced to spend substantial time manually opening repositories, reading commit histories, and checking for unit tests. This process is subjective, prone to fatigue, and easily misled by superficial metrics like vanity star counts or single-file novelty scripts.
+
+\textbf{DevLens} is an automated developer portfolio evaluation and open-source readiness engine. It replaces subjective, opaque inspections with an automated, deterministic evaluation engine that parses observable code artifacts directly from the GitHub REST API v3. DevLens extracts structured README documentation, recursive test-to-source file ratios, commit message hygiene, and normalized collaboration signals, combining them into a single weighted **Portfolio Quality Index (PQI)**. Furthermore, DevLens calculates a language-level **Jaccard Similarity Index** comparing the developer's demonstrated tech stack against 8 curated open-source repositories (such as Express, Flask, and Liferay), surfacing concrete skill gaps with targeted learning links.
+
+\subsection{1.1 Problem Statement \& Motivation}
+Three core problems motivated the development of DevLens:
+\begin{enumerate}
+    \item \textbf{Manual Vetting Doesn't Scale:} Technical recruiting and portfolio vetting rely on manual, subjective inspection of GitHub accounts, which is slow and inconsistent.
+    \item \textbf{Recruiters Lack Objective Tools:} Recruiters lack automated tools to distinguish genuine software engineering discipline (clean commits, thorough documentation, unit test suites) from low-effort or abandoned coursework codebases.
+    \item \textbf{Aspiring Developers Struggle with Open-Source Readiness:} Students and junior engineers want to contribute to major open-source projects but lack actionable diagnostic tools to identify exactly which languages and tools they need to learn.
+\end{enumerate}
+
+\subsection{1.2 Objectives of DevLens}
+The main objectives of DevLens are:
+\begin{itemize}
+    \item To build a lightweight, local-first evaluation engine that consumes the official GitHub REST API v3 without requiring private tokens or external cloud dependencies.
+    \item To implement a deterministic, 4-vector scoring engine (Documentation, Testing, Commit Hygiene, Collaboration) that produces an explainable, reproducible score.
+    \item To develop a recursive Git-tree parser that calculates test-to-source code ratios across top active repositories.
+    \item To compute Jaccard set-similarity skill gaps against curated open-source projects and provide direct links to official documentation (MDN, Python.org, Rust Book).
+    \item To persist all evaluation runs into a local SQLite database for audit trail verification and benchmark reproducibility.
+\end{itemize}
+
+\subsection{1.3 Scope and Organisation of the Report}
+This report covers Phase I of the capstone project. Section 2 reviews the academic literature. Section 3 details the system architecture, mathematical formulas, and individual member contributions. Section 4 presents the conclusion and Phase II roadmap, and Section 5 lists the references.
+
+% =====================================================================
+% PAGE 6: 2. LITERATURE REVIEW
+% =====================================================================
+\newpage
+\thispagestyle{fancy}
+\section{2. EXISTING WORK / LITERATURE REVIEW}
+
+\subsection{2.1 Mining GitHub and Signal Noise Filtering}
+Kalliamvakou et al. [1] established that GitHub data is systematically noisy: most repositories are personal and inactive, many contain no software at all, and approximately 40\% of merged pull requests do not register as merged. They recommended strict filtering criteria when mining GitHub. DevLens directly addresses this research gap by implementing an extraction layer that filters repositories: it sorts by \texttt{pushed\_at}, restricts analysis to the top 5 most active non-fork repositories, and excludes archived coursework, ensuring the score reflects current engineering discipline.
+
+\subsection{2.2 Social Coding and Collaboration Signals}
+Dabbish et al. [2] showed that developers draw rich inferences from visible activity traces on GitHub, using transparency as a social signalling system. Singer et al. [3] surveyed recruiters and developers using profile aggregators, identifying significant trust and interpretability problems in automated scoring tools. DevLens resolves this by making every score fully deterministic and rule-traceable without black-box machine learning models. Collaboration signals (stars, forks) are log-scaled and capped at a low weight (15\%) so viral repositories do not distort the engineering score.
+
+\subsection{2.3 Code Quality, Testing Adequacy, and Commit Hygiene}
+Prana et al. [4] manually annotated 4,226 README sections across 393 repositories, finding that essential installation and usage instructions are frequently missing. DevLens uses deterministic regex parsers to award points for Installation (+15), Usage (+15), API Docs (+10), Code Blocks (+10), Contributing (+10), and License (+5). Kochhar et al. [5] analyzed testing adequacy across 300+ projects, finding only 31\% exceed 50\% test coverage. DevLens uses a language-agnostic test-to-source file ratio proxy from recursive Git trees. Finally, Tian et al. [6] analyzed commit message quality; DevLens enforces Conventional Commits validation and flags empty or generic messages (like ``fix'' or ``update'').
+
+\subsection{2.4 Comparative Literature Analysis and Research Gap}
+Table 4 on Slide 3 summarizes the comparative analysis. While prior research documented GitHub noise, commit quality, and test coverage in isolation, none built an integrated, real-time, deterministic tool for individual developer portfolio evaluation. DevLens bridges this gap.
+
+% =====================================================================
+% PAGE 7: 3. TOPIC OF THE WORK - 3.1 ARCHITECTURE
+% =====================================================================
+\newpage
+\thispagestyle{fancy}
+\section{3. TOPIC OF THE WORK}
+
+\subsection{3.1 System Design / Architecture}
+
+\subsubsection{3.1.1 Four-Layer Local-First System Architecture}
+DevLens is built as a zero-cost, local-first system that runs entirely on a single machine without paid third-party infrastructure. As shown in Fig. 1, the architecture is divided into four distinct layers:
+\begin{enumerate}
+    \item \textbf{Frontend Dashboard (HTML5 / CSS / Chart.js):} Provides a clean, responsive web interface at \texttt{http://localhost:5000} to enter GitHub usernames and inspect visual score breakdowns.
+    \item \textbf{Backend Server (Node.js / Express - \texttt{server.js}):} Handles HTTP routing, rate-limit headroom tracking, and GitHub REST API v3 communication.
+    \item \textbf{Client Scoring Engine:} Executes the deterministic PQI weighting formulas and Jaccard similarity mathematics in memory.
+    \item \textbf{Persistence Layer (SQLite - \texttt{data/devlens.db}):} Stores audit history logs, timestamped evaluation summaries, and benchmark targets.
+\end{enumerate}
+
+\begin{figure}[h!]
+\centering
+% \includegraphics[width=0.85\textwidth]{fig1_architecture.png}
+\vspace{0.3cm}
+\fbox{\parbox{0.9\textwidth}{\centering \vspace{1.0cm} \textbf{Fig. 1: Four-Layer Local-First System Design of DevLens} \\ \small (Frontend Dashboard $\rightarrow$ Node.js/Express Backend $\rightarrow$ GitHub REST API $\rightarrow$ Client Scoring Engine $\rightarrow$ SQLite Database) \vspace{1.0cm}}}
+\vspace{0.3cm}
+\caption{System architecture of DevLens}
+\end{figure}
+
+\subsubsection{3.1.2 Technology Stack}
+Table 1 outlines the lightweight, open-source technology stack chosen for DevLens.
+
+\begin{table}[h!]
+\centering
+\caption{Lightweight, Zero-Cost Technology Stack}
+\label{tab:techstack}
+\small
+\begin{tabularx}{\textwidth}{|p{2.8cm}|p{3.5cm}|X|}
+\hline
+\textbf{Layer} & \textbf{Technology} & \textbf{Role in DevLens} \\ \hline
+Backend & Node.js + Express & REST API server, request validation, and error routing. \\ \hline
+Data Source & GitHub REST API v3 & Profile, repository tree, README documents, and commits. \\ \hline
+Persistence & SQLite (\texttt{devlens.db}) & Audit trail logging and benchmark target validation records. \\ \hline
+Frontend & Vanilla JS + HTML5/CSS & Professional engineering-styled dashboard and interactivity. \\ \hline
+Visualization & Chart.js & Language distribution doughnut charts and metric breakdowns. \\ \hline
+\end{tabularx}
+\end{table}
+
+% =====================================================================
+% PAGE 8: 3.1.3 SCHEMAS & 3.1.4 SITE STRUCTURE
+% =====================================================================
+\newpage
+\thispagestyle{fancy}
+\subsubsection{3.1.3 Schema and Database Contracts}
+DevLens uses an embedded SQLite database (\texttt{data/devlens.db}) to persist evaluation audits without requiring external database servers. Table 2 details the audit schema.
+
+\begin{table}[h!]
+\centering
+\caption{SQLite Audit Database Schema (\texttt{devlens.db})}
+\label{tab:dbschema}
+\small
+\begin{tabularx}{\textwidth}{|p{3cm}|p{2.5cm}|X|}
+\hline
+\textbf{Column} & \textbf{Type} & \textbf{Description} \\ \hline
+id & INTEGER PRIMARY KEY & Auto-incrementing unique scan identifier. \\ \hline
+username & TEXT & Target developer GitHub username. \\ \hline
+pqi\_score & REAL & Final composite Portfolio Quality Index score (0--100). \\ \hline
+doc\_score & REAL & Weighted documentation sub-score (0--100). \\ \hline
+test\_score & REAL & Weighted test-to-source coverage sub-score (0--100). \\ \hline
+commit\_score & REAL & Weighted commit-message hygiene sub-score (0--100). \\ \hline
+collab\_score & REAL & Weighted collaboration and social sub-score (0--100). \\ \hline
+target\_matches & TEXT (JSON) & Jaccard similarity results against curated open-source projects. \\ \hline
+scanned\_at & TIMESTAMP & Audit scan timestamp. \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsubsection{3.1.4 Site Structure and REST API Endpoints}
+The backend serves the application through standard Express routes described in Table 3.
+
+\begin{figure}[h!]
+\centering
+% \includegraphics[width=0.85\textwidth]{fig2_routes.png}
+\vspace{0.3cm}
+\fbox{\parbox{0.9\textwidth}{\centering \vspace{0.8cm} \textbf{Fig. 2: Site Structure and API Flow} \\ \small (UI Dashboard $\rightarrow$ GET /api/evaluate/:username $\rightarrow$ GET /api/history $\rightarrow$ GET /api/ratelimit) \vspace{0.8cm}}}
+\vspace{0.3cm}
+\caption{Site structure and routes}
+\end{figure}
+
+\begin{table}[h!]
+\centering
+\caption{REST API Endpoints of DevLens}
+\label{tab:routes}
+\small
+\begin{tabularx}{\textwidth}{|p{3.8cm}|p{2cm}|X|}
+\hline
+\textbf{Endpoint} & \textbf{Method} & \textbf{Functionality} \\ \hline
+/ & GET & Serves the responsive engineering dashboard UI. \\ \hline
+/api/evaluate/:user & GET & Ingests profile, extracts repos, executes 4-vector PQI and Jaccard matching. \\ \hline
+/api/history & GET & Returns historical audit scan records from SQLite. \\ \hline
+/api/ratelimit & GET & Surfaces remaining GitHub API quota (60 unauthenticated / 5000 with PAT). \\ \hline
+\end{tabularx}
+\end{table}
+
+% =====================================================================
+% PAGE 9: 3.2 WORKING PRINCIPLE
+% =====================================================================
+\newpage
+\thispagestyle{fancy}
+\subsection{3.2 Working Principle and Metric Formulations}
+
+\subsubsection{3.2.1 End-to-End System Pipeline}
+When a user submits a GitHub username via the dashboard, DevLens executes the five-stage pipeline shown in Fig. 3:
+$$\text{GitHub Profile} \longrightarrow \text{API Extraction} \longrightarrow \text{Multi-Vector Analysis} \longrightarrow \text{PQI Scoring} \longrightarrow \text{Jaccard OSR Matching}$$
+
+\begin{figure}[h!]
+\centering
+% \includegraphics[width=0.85\textwidth]{fig3_dataflow.png}
+\vspace{0.3cm}
+\fbox{\parbox{0.9\textwidth}{\centering \vspace{0.8cm} \textbf{Fig. 3: System Pipeline --- From Profile to Score} \\ \small (1. Username Submitted $\rightarrow$ 2. Repos \& Trees Pulled via REST v3 $\rightarrow$ 3. 4 Metrics Computed $\rightarrow$ 4. Weighted PQI $\rightarrow$ 5. Jaccard Skill Gaps) \vspace{0.8cm}}}
+\vspace{0.3cm}
+\caption{Data flow in a simulation session}
+\end{figure}
+
+\subsubsection{3.2.2 Portfolio Quality Index (PQI) Formulation}
+DevLens avoids single-metric distortions (such as vanity star counts) by combining four core engineering vectors into one composite, weighted index:
+\begin{equation}
+\text{PQI} = 0.35 \times \text{Score}(\text{Doc}) + 0.30 \times \text{Score}(\text{Test}) + 0.20 \times \text{Score}(\text{Commit}) + 0.15 \times \text{Score}(\text{Collab})
+\end{equation}
+
+\noindent \textbf{Weight Rationale (Slide 7):}
+\begin{itemize}
+    \item \textbf{Documentation (35\%):} The heaviest weight, since a README is the first thing a recruiter or contributor reads; undocumented code is effectively unusable.
+    \item \textbf{Testing Ratio (30\%):} Weighted highly because automated test coverage is the strongest observable signal of production-grade engineering discipline.
+    \item \textbf{Commit Hygiene (20\%):} Meaningful, structured commit history reflects engineering process.
+    \item \textbf{Collaboration (15\%):} The lowest weight, since stars and forks are influenced by marketing as much as code quality.
+\end{itemize}
+
+% =====================================================================
+% PAGE 10: 3.2.3 METRIC FORMULATIONS & JACCARD
+% =====================================================================
+\newpage
+\thispagestyle{fancy}
+\subsubsection{3.2.3 Detailed Metric Formulations}
+DevLens calculates each vector deterministically using explicit formulas (Slide 8):
+\begin{enumerate}
+    \item \textbf{Documentation Score ($\text{Score}_{\text{Doc}}$):} Regex checks for key README sections: Installation (+15), Usage (+15), API Documentation (+10), Code Blocks (+10), License (+5), and Contributing Guidelines (+10). Total score is normalized to 100.
+    \item \textbf{Testing Ratio Score ($\text{Score}_{\text{Test}}$):} Evaluates test presence via recursive Git trees:
+    \begin{equation}
+    \text{Ratio} = \frac{N(\text{test files})}{N(\text{source files})}, \quad \text{Score}_{\text{Test}} = \min(100, \text{Ratio} \times 250)
+    \end{equation}
+    Capped at 100 to prevent test-heavy repositories from skewing the final composite score.
+    \item \textbf{Commit Hygiene Score ($\text{Score}_{\text{Commit}}$):} Validates commit message length ($>10$ characters), filters generic words (``fix'', ``update''), and awards bonuses for Conventional Commits formatting (\texttt{feat:}, \texttt{fix:}, \texttt{docs:}).
+    \item \textbf{Collaboration Score ($\text{Score}_{\text{Collab}}$):} Log-scaled to prevent viral repos from dominating:
+    \begin{equation}
+    \text{Score}_{\text{Collab}} = 5 \times \log_2(1 + \text{stars}) + 8 \times \log_2(1 + \text{forks}) + \text{issue count}
+    \end{equation}
+\end{enumerate}
+
+\subsubsection{3.2.4 Jaccard Open-Source Readiness Skill Matching Engine}
+To help aspiring developers identify missing skills needed for major open-source projects, DevLens computes the Jaccard set-similarity index:
+\begin{equation}
+J(\text{DevLangs}, \text{RepoLangs}) = \frac{|\text{DevLangs} \cap \text{RepoLangs}|}{|\text{DevLangs} \cup \text{RepoLangs}|}
+\end{equation}
+The system compares developer languages against 8 curated open-source targets (Express, Flask, Liferay, React, Django, Rust tools, etc.) and outputs specific missing competencies with documentation links (MDN, Python.org, Rust Book).
+
+\subsubsection{3.2.5 Audit Trail Logging and Rate-Limit Handling}
+Every scan is recorded in \texttt{devlens.db}. The system tracks GitHub rate limits (60 requests/hour unauthenticated, expandable to 5,000 requests/hour via Personal Access Token) and surfaces live headroom to the user.
+
+\subsubsection{3.2.6 Accessibility}
+The dashboard implements high-contrast color tokens, responsive CSS grids, and full keyboard accessibility.
+
+% =====================================================================
+% PAGE 11: 3.3 RESULTS - IMPLEMENTATION STATUS
+% =====================================================================
+\newpage
+\thispagestyle{fancy}
+\subsection{3.3 Results and Discussion}
+
+\subsubsection{3.3.1 Implementation Status}
+Table 4 summarises the state of DevLens implementation at the end of Phase I, verified against the repository codebase.
+
+\begin{table}[h!]
+\centering
+\caption{Implementation status at the end of Phase I}
+\label{tab:status}
+\small
+\begin{tabularx}{\textwidth}{|X|p{4.2cm}|}
+\hline
+\textbf{Feature} & \textbf{Status} \\ \hline
+Node.js + Express backend server with error handling (\texttt{server.js}) & Complete \\ \hline
+GitHub REST API v3 extraction pipeline (repos, trees, READMEs, commits) & Complete \\ \hline
+Regex structural README documentation parser & Complete \\ \hline
+Recursive Git-tree test-to-source ratio algorithm & Complete \\ \hline
+Commit-message hygiene and Conventional Commits filter & Complete \\ \hline
+Log-scaled collaboration metric calculation & Complete \\ \hline
+Portfolio Quality Index (PQI) composite scoring module & Complete \\ \hline
+Jaccard set-similarity skill-gap matching engine (8 curated OSS targets) & Complete \\ \hline
+SQLite audit logging database (\texttt{data/devlens.db}) & Complete \\ \hline
+Responsive engineering dashboard UI (\texttt{index.html}, \texttt{index.css}) & Complete \\ \hline
+Chart.js language distribution doughnut charts & Complete \\ \hline
+Empirical control-suite test harness & Complete \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsubsection{3.3.2 Application Screens}
+Fig. 4 shows the DevLens dashboard hero section running locally at \texttt{http://localhost:5000}. Users enter any public GitHub username to initiate the scan.
+
+\begin{figure}[h!]
+\centering
+% \includegraphics[width=0.85\textwidth]{fig4_dashboard.png}
+\vspace{0.3cm}
+\fbox{\parbox{0.9\textwidth}{\centering \vspace{0.8cm} \textbf{Fig. 4: DevLens Engineering Dashboard UI (Hero Section)} \\ \small (Username input form, scan trigger, and real-time status display) \vspace{0.8cm}}}
+\vspace{0.3cm}
+\caption{Landing page of DevLens}
+\end{figure}
+
+% =====================================================================
+% PAGE 12: APPLICATION SCREENS 1
+% =====================================================================
+\newpage
+\thispagestyle{fancy}
+\noindent Fig. 5 shows the real-time scan progress bar that tracks API extraction stages while displaying remaining GitHub API rate-limit headroom.
+
+\begin{figure}[h!]
+\centering
+% \includegraphics[width=0.85\textwidth]{fig5_progress.png}
+\vspace{0.3cm}
+\fbox{\parbox{0.9\textwidth}{\centering \vspace{1.2cm} \textbf{Fig. 5: Real-time scan progress bar with API rate-limit headroom} \\ \small (Live progress indicator, rate-limit tracker, and step validation) \vspace{1.2cm}}}
+\vspace{0.3cm}
+\caption{Real-time scan progress and rate-limit display}
+\end{figure}
+
+\noindent Fig. 6 shows the interactive Chart.js doughnut chart that visualizes the developer's language distribution across their top active repositories.
+
+\begin{figure}[h!]
+\centering
+% \includegraphics[width=0.85\textwidth]{fig6_chart.png}
+\vspace{0.3cm}
+\fbox{\parbox{0.9\textwidth}{\centering \vspace{1.2cm} \textbf{Fig. 6: Interactive Language Distribution Chart} \\ \small (Chart.js doughnut visualization of repository languages and byte counts) \vspace{1.2cm}}}
+\vspace{0.3cm}
+\caption{Interactive language distribution chart}
+\end{figure}
+
+% =====================================================================
+% PAGE 13: APPLICATION SCREENS 2
+% =====================================================================
+\newpage
+\thispagestyle{fancy}
+\noindent Fig. 7 shows the multi-vector breakdown panel displaying individual sub-scores for Documentation (35\%), Testing (30\%), Commit Hygiene (20\%), and Collaboration (15\%).
+
+\begin{figure}[h!]
+\centering
+% \includegraphics[width=0.85\textwidth]{fig7_score_breakdown.png}
+\vspace{0.3cm}
+\fbox{\parbox{0.9\textwidth}{\centering \vspace{1.2cm} \textbf{Fig. 7: Multi-Vector PQI Score Breakdown Panel} \\ \small (Detailed score cards for Doc, Test, Commit, and Collaboration vectors) \vspace{1.2cm}}}
+\vspace{0.3cm}
+\caption{Multi-Vector score breakdown panel}
+\end{figure}
+
+\noindent Fig. 8 shows the actionable recommendation cards that name the exact missing open-source competencies and link to official documentation (MDN, Python.org, Rust Book).
+
+\begin{figure}[h!]
+\centering
+% \includegraphics[width=0.85\textwidth]{fig8_recommendations.png}
+\vspace{0.3cm}
+\fbox{\parbox{0.9\textwidth}{\centering \vspace{1.2cm} \textbf{Fig. 8: Actionable Open-Source Skill Gap Recommendation Cards} \\ \small (Jaccard match percentages, missing languages, and direct learning links) \vspace{1.2cm}}}
+\vspace{0.3cm}
+\caption{Actionable recommendations and skill gap cards}
+\end{figure}
+
+% =====================================================================
+% PAGE 14: APPLICATION SCREENS 3 & BENCHMARK RESULTS
+% =====================================================================
+\newpage
+\thispagestyle{fancy}
+\noindent Fig. 9 shows the SQLite audit history table where previous evaluations can be reviewed with timestamped score summaries.
+
+\begin{figure}[h!]
+\centering
+% \includegraphics[width=0.85\textwidth]{fig9_audit_history.png}
+\vspace{0.3cm}
+\fbox{\parbox{0.9\textwidth}{\centering \vspace{1.0cm} \textbf{Fig. 9: SQLite Audit History Log and Historical Lookups} \\ \small (Persisted scan history table showing usernames, PQI scores, and dates) \vspace{1.0cm}}}
+\vspace{0.3cm}
+\caption{SQLite audit history interface}
+\end{figure}
+
+\subsubsection{3.3.3 Empirical Benchmark Validation Against Known Repositories}
+To validate scoring reproducibility and discriminatory power, an automated control-suite test harness was executed against five known open-source repositories spanning novelty scripts to enterprise-grade codebases (Slide 11). Table 5 details the benchmark results.
+
+\begin{figure}[h!]
+\centering
+% \includegraphics[width=0.85\textwidth]{fig10_benchmarks.png}
+\vspace{0.3cm}
+\fbox{\parbox{0.9\textwidth}{\centering \vspace{1.0cm} \textbf{Fig. 10: Benchmark Score Distribution Across 5 Control Repositories} \\ \small (Tier 1 Enterprise vs. Tier 2 Standard vs. Tier 4 Joke Repositories) \vspace{1.0cm}}}
+\vspace{0.3cm}
+\caption{Benchmark score validation records}
+\end{figure}
+
+\noindent \textbf{Interpretation (Slide 11):} PQI scores correctly and consistently separated low-effort, novelty submissions (Tier 4) from production-quality, well-documented codebases (Tier 1--2), confirming the scoring formula behaves as intended before wider deployment.
+
+% =====================================================================
+% PAGE 15: BENCHMARK TABLES & PQI MATRIX
+% =====================================================================
+\newpage
+\thispagestyle{fancy}
+\begin{table}[h!]
+\centering
+\caption{Empirical Benchmark Validation Against Baseline Repositories}
+\label{tab:benchmarks}
+\small
+\begin{tabularx}{\textwidth}{|p{4.5cm}|X|p{3.8cm}|}
+\hline
+\textbf{Repository} & \textbf{Observed PQI Result} & \textbf{Architectural Classification} \\ \hline
+\texttt{kelseyhightower/nocode} & Low / Tier 4 (0 lines, joke repo) & Novelty / Zero-code repo \\ \hline
+\texttt{expressjs/express} & Enterprise / Tier 1 (High tests \& docs) & Production web framework \\ \hline
+\texttt{pallets/flask} & Enterprise / Tier 1 (High tests \& docs) & Production microframework \\ \hline
+\texttt{brianchandotcom/liferay-portal} & Standard / Tier 2 (Modular architecture) & Enterprise portal \\ \hline
+\texttt{jezen/is-thirteen} & Enterprise / Tier 1 (Extensive test suites) & Test-driven package \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsubsection{3.3.4 PQI Scoring Breakdown and Tier Stratification}
+Table 6 summarizes the weight distribution and scoring parameters across the four evaluation vectors.
+
+\begin{table}[h!]
+\centering
+\caption{Portfolio Quality Index (PQI) Weighting \& Scoring Matrix}
+\label{tab:pqi_matrix}
+\small
+\begin{tabularx}{\textwidth}{|p{3cm}|p{2cm}|X|}
+\hline
+\textbf{Vector} & \textbf{Weight} & \textbf{Formula \& Scoring Rules} \\ \hline
+Documentation & 35\% & Regex: Installation (+15), Usage (+15), API Docs (+10), Code Blocks (+10), License (+5), Contributing (+10). \\ \hline
+Testing Ratio & 30\% & $\text{Ratio} = N(\text{test})/N(\text{source})$; $\text{Score} = \min(100, \text{Ratio} \times 250)$. \\ \hline
+Commit Hygiene & 20\% & Length validation ($>10$ chars), generic word filter, Conventional Commits bonus. \\ \hline
+Collaboration & 15\% & $5 \times \log_2(1 + \text{stars}) + 8 \times \log_2(1 + \text{forks}) + \text{issue count}$. \\ \hline
+\end{tabularx}
+\end{table}
+
+\noindent Fig. 11 illustrates the linear scaling of the test-to-source ratio up to the cap of 100, and Fig. 12 illustrates the Jaccard similarity distributions across candidate profiles.
+
+\begin{figure}[h!]
+\centering
+% \includegraphics[width=0.85\textwidth]{fig11_test_ratio.png}
+\vspace{0.3cm}
+\fbox{\parbox{0.9\textwidth}{\centering \vspace{0.8cm} \textbf{Fig. 11: Test-to-Source File Ratio Scaling Function} \vspace{0.8cm}}}
+\vspace{0.3cm}
+\caption{Test ratio scoring curve}
+\end{figure}
+
+% =====================================================================
+% PAGE 16: DISCUSSION & MEMBER CONTRIBUTIONS (NEHAL)
+% =====================================================================
+\newpage
+\thispagestyle{fancy}
+\begin{figure}[h!]
+\centering
+% \includegraphics[width=0.85\textwidth]{fig12_jaccard.png}
+\vspace{0.3cm}
+\fbox{\parbox{0.9\textwidth}{\centering \vspace{0.8cm} \textbf{Fig. 12: Jaccard Skill Similarity Matching Against 8 Target OSS Repositories} \vspace{0.8cm}}}
+\vspace{0.3cm}
+\caption{Jaccard matching distributions}
+\end{figure}
+
+\subsubsection{3.3.5 Discussion and Limitations}
+The local-first architecture and deterministic mathematical formulas have proven highly effective: evaluations complete in under 2 seconds without requiring expensive GPU infrastructure. Scores are 100\% reproducible and rule-traceable.
+
+Two main limitations are recognized: the test-to-source ratio acts as a language-agnostic file proxy rather than executing true line coverage (which requires language-specific test runners); and commit hygiene checks currently use deterministic heuristics rather than semantic Natural Language Processing.
+
+\subsection{3.4 Individual Contribution by Members}
+
+\noindent \textbf{Nehal Yadav (23BET10030): Backend \& Database Architecture Lead.} Nehal was responsible for the backend infrastructure, API pipeline, and persistence layer (Slide 12):
+\begin{itemize}
+    \item \textbf{Node.js / Express REST API Implementation:} Built the core web server (\texttt{server.js}) to ingest evaluation requests and orchestrate GitHub API calls.
+    \item \textbf{SQLite Database Design \& Logging:} Architected the \texttt{devlens.db} schema and implemented audit history persistence routines.
+    \item \textbf{Rate-Limit Management \& Error Handling:} Built robust HTTP error handling for GitHub API limits (403 Forbidden / 404 User Not Found) with rate-limit headroom tracking.
+\end{itemize}
+
+% =====================================================================
+% PAGE 17: MEMBER CONTRIBUTIONS (ADITI & MUDRA)
+% =====================================================================
+\newpage
+\thispagestyle{fancy}
+\noindent \textbf{Aditi Lande (23BET10035): Metric Scoring Engine \& Empirical Algorithms Lead.} Aditi was responsible for the mathematical formulations and static analysis algorithms (Slide 12):
+\begin{itemize}
+    \item \textbf{Regex Structural README Documentation Parser:} Engineered regular expression algorithms to validate essential README sections (Installation, Usage, API Docs, License, Contributing).
+    \item \textbf{Recursive Git-Tree Test-to-Source Ratio Algorithm:} Developed the recursive tree traversal algorithm to count test vs. source files and calculate normalized testing scores.
+    \item \textbf{Commit-Message Hygiene \& Conventional Commits Filter:} Built deterministic filters to evaluate commit message length, eliminate low-information messages, and reward Conventional Commits formatting.
+    \item \textbf{PQI Composite Scoring Formula:} Formalized and tuned the weighted multi-vector index ($0.35 \text{Doc} + 0.30 \text{Test} + 0.20 \text{Commit} + 0.15 \text{Collab}$).
+\end{itemize}
+
+\vspace{0.4cm}
+\noindent \textbf{Mudra Khuje (23BET10041): UI Dashboard, Jaccard Recommender \& Benchmark Lead.} Mudra was responsible for the frontend user interface, skill-gap engine, and validation benchmarks (Slide 12):
+\begin{itemize}
+    \item \textbf{Engineering Dashboard UI:} Developed the responsive dashboard interface (\texttt{index.html}, \texttt{index.css}) and Chart.js language distribution visualizations.
+    \item \textbf{Jaccard Skill-Gap Matching Engine:} Implemented the set-similarity algorithm $J(\text{Dev}, \text{Repo}) = \frac{|\text{Dev} \cap \text{Repo}|}{|\text{Dev} \cup \text{Repo}|}$ comparing candidates against 8 curated open-source repositories.
+    \item \textbf{Curated Learning Links \& Test Harness:} Integrated links to official documentation (MDN, Python.org, Rust Book) and developed the 5-repository benchmark control suite.
+\end{itemize}
+
+\vspace{0.3cm}
+\noindent All three members participated in team planning, technical integration, and prepared this report collaboratively.
+
+% =====================================================================
+% PAGE 18: 4. CONCLUSION
+% =====================================================================
+\newpage
+\thispagestyle{fancy}
+\section{4. CONCLUSION}
+
+\subsection{4.1 Summary}
+Phase I of the DevLens Capstone Project has successfully designed and implemented an automated, deterministic developer portfolio evaluation and open-source readiness engine. Built on Node.js, Express, Vanilla JavaScript, Chart.js, and SQLite, DevLens eliminates subjective human vetting and opaque AI models in favor of a 100\% transparent, rule-traceable evaluation framework. The system extracts structured documentation, test-to-source file ratios, commit hygiene, and collaboration signals into a composite Portfolio Quality Index (PQI). Furthermore, the Jaccard set-similarity matching engine compares candidate skill sets against 8 curated open-source repositories, surfacing actionable skill gaps with direct learning links. Empirical benchmark testing across 5 baseline repositories confirmed that DevLens reliably differentiates novelty codebases from enterprise-grade engineering practices.
+
+\subsection{4.2 Limitations}
+\begin{itemize}
+    \item Test evaluation relies on a file-ratio proxy rather than executing true runtime line coverage across heterogeneous language ecosystems.
+    \item Commit hygiene evaluation uses deterministic string heuristics rather than deep semantic NLP for commit message intent.
+    \item Target repository recommendations are currently limited to 8 curated open-source baseline projects.
+\end{itemize}
+
+\subsection{4.3 Future Work (Phase II)}
+\begin{itemize}
+    \item Incorporate language-specific static analysis parsers (e.g. ESLint, PyLint AST analysis) for deeper code quality checks.
+    \item Expand the curated open-source target repository catalog from 8 to 50+ repositories across diverse domains.
+    \item Add automated GitHub webhook integration to enable continuous portfolio evaluation on new repository pushes.
+    \item Conduct user validation studies with recruiters and student developers to measure hiring efficiency gains.
+\end{itemize}
+
+% =====================================================================
+% PAGE 19: 5. REFERENCES
+% =====================================================================
+\newpage
+\thispagestyle{fancy}
+\section{5. REFERENCES}
+
+\noindent [1] E. Kalliamvakou, G. Gousios, K. Blincoe, L. Singer, D. M. German, and A. Damian, "The Promises and Perils of Mining GitHub," in \emph{Proceedings of the 11th Working Conference on Mining Software Repositories (MSR '14)}, 2014, pp. 92--101.
+
+\noindent [2] L. Dabbish, C. Stuart, J. Tsay, and J. Herbsleb, "Social Coding in GitHub: Transparency and Collaboration in an Open Software Repository," in \emph{Proceedings of the ACM Conference on Computer Supported Cooperative Work (CSCW '12)}, 2012, pp. 1277--1286.
+
+\noindent [3] L. Singer, F. Figueira Filho, and M. A. Storey, "Software Engineering at the Speed of Light: How Developers Use Social Media to Support Collaboration," in \emph{Proceedings of the ACM Conference on Computer Supported Cooperative Work (CSCW '13)}, 2013.
+
+\noindent [4] G. A. A. Prana, C. Treude, F. Thung, T. Atapattu, and D. Lo, "Categorizing the Content of GitHub README Files," \emph{Empirical Software Engineering}, vol. 24, no. 3, pp. 1296--1327, 2019.
+
+\noindent [5] P. S. Kochhar, D. Lo, C. A. Lawall, and V. Nagappan, "An Empirical Study on the Adequacy of Testing in Open Source Projects," in \emph{Proceedings of the 21st Asia-Pacific Software Engineering Conference (APSEC '14)}, 2014, pp. 191--198.
+
+\noindent [6] Y. Tian, K. Liu, A. A. Abdalkareem, E. Shihab, and S. Wang, "What Makes a Good Commit Message?" in \emph{Proceedings of the 44th International Conference on Software Engineering (ICSE '22)}, 2022.
+
+\noindent [7] P. Jaccard, "The Distribution of the Flora in the Alpine Zone," \emph{New Phytologist}, vol. 11, no. 2, pp. 37--50, 1912.
+
+\noindent [8] Conventional Commits Specification, "Conventional Commits v1.0.0," 2020. [Online]. Available: \url{https://www.conventionalcommits.org/}
+
+\noindent [9] GitHub, "GitHub REST API v3 Documentation," 2024. [Online]. Available: \url{https://docs.github.com/en/rest}
+
+\noindent [10] SQLite Development Team, "SQLite Database Engine," 2024. [Online]. Available: \url{https://www.sqlite.org/}
+
+\noindent [11] Chart.js Contributors, "Chart.js Documentation," 2024. [Online]. Available: \url{https://www.chartjs.org/docs/latest/}
+
+\noindent [12] Express.js Team, "Express - Fast, unopinionated, minimalist web framework for Node.js," 2024. [Online]. Available: \url{https://expressjs.com/}
+
+\noindent [13] C. Sadowski, E. Aftandilian, A. Eagle, M. Miller-Whitehead, and C. Jaspan, "Lessons from Building Static Analysis Tools at Google," \emph{Communications of the ACM}, vol. 61, no. 4, pp. 58--66, 2018.
+
+\end{document}

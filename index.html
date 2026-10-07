@@ -3,671 +3,827 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DevLens AI - Developer Portfolio & Open-Source Readiness Platform</title>
-  <!-- Outfit Google Font -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- Chart.js for charts -->
+  <title>DevLens — Automated Developer Portfolio Evaluation & Open-Source Readiness</title>
+  <meta name="description" content="Automated Developer Portfolio Evaluation and Skill-Gap Recommendation System for Open-Source Readiness.">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="index.css">
   <style>
-    /* Inline helper layout grid styling */
     .dashboard-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0 1.5rem;
+      display: grid; grid-template-columns: 1fr; gap: 1rem;
+      max-width: 1400px; margin: 0 auto; padding: 0 1rem 3rem;
     }
-    
     @media (min-width: 1024px) {
-      .dashboard-grid {
-        grid-template-columns: 320px 1fr;
-      }
-      .main-panel-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1.5rem;
-      }
-      .span-full {
-        grid-column: span 2;
-      }
+      .dashboard-grid { grid-template-columns: 320px 1fr; }
+      .main-panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+      .span-full { grid-column: span 2; }
     }
-
     header {
-      background: rgba(10, 11, 16, 0.8);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border-color);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      padding: 1rem 1.5rem;
-      margin-bottom: 2rem;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-default);
+      position: sticky; top: 0; z-index: 100;
+      padding: 0.75rem 1.25rem; margin-bottom: 1.25rem;
     }
-
     .header-content {
-      max-width: 1400px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      max-width: 1400px; margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;
     }
-
     .logo-area {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-weight: 800;
-      font-size: 1.5rem;
-      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      display: flex; align-items: center; gap: 0.6rem;
+      font-weight: 700; font-size: 1.15rem; color: var(--text-primary);
+      letter-spacing: -0.02em;
     }
-
     .badge {
-      padding: 0.25rem 0.6rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      background: rgba(99, 102, 241, 0.15);
-      color: var(--accent-primary);
-      border: 1px solid rgba(99, 102, 241, 0.25);
+      padding: 0.15rem 0.5rem; border-radius: 4px;
+      font-size: 0.7rem; font-weight: 600;
+      background: var(--bg-subtle); color: var(--text-secondary);
+      border: 1px solid var(--border-default);
     }
+    .badge-green { background: rgba(35,134,54,0.15); color: var(--accent-green-text); border-color: rgba(35,134,54,0.3); }
+    .badge-amber { background: rgba(210,153,34,0.15); color: var(--accent-amber); border-color: rgba(210,153,34,0.3); }
+    .badge-red { background: rgba(248,81,73,0.15); color: var(--accent-red); border-color: rgba(248,81,73,0.3); }
+    .badge-blue { background: rgba(47,129,247,0.15); color: var(--accent-blue); border-color: rgba(47,129,247,0.3); }
 
-    /* Input controls */
     .input-field {
-      width: 100%;
-      background: var(--bg-tertiary);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 0.75rem 1rem;
-      color: var(--text-primary);
-      font-size: 0.9rem;
-      outline: none;
-      transition: border-color 0.2s;
+      background: var(--bg-canvas);
+      border: 1px solid var(--border-default); border-radius: 6px;
+      padding: 6px 12px; color: var(--text-primary);
+      font-size: 13px; outline: none; transition: border-color 0.15s;
+    }
+    .input-field:focus { border-color: var(--accent-blue); }
+    
+    .sidebar { display: flex; flex-direction: column; gap: 1rem; }
+    
+    .score-radial { position: relative; width: 130px; height: 130px; margin: 0 auto; }
+    .score-number {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -55%);
+      font-size: 2rem; font-weight: 800; color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+    .score-sublabel {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, 55%);
+      font-size: 0.65rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;
+    }
+    .progress-ring__circle { transition: stroke-dashoffset 0.5s ease; }
+    
+    .status-bar { height: 6px; background: var(--bg-subtle); border-radius: 3px; overflow: hidden; margin-top: 0.35rem; }
+    .status-bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+    
+    .repo-card {
+      background: var(--bg-canvas); border: 1px solid var(--border-default);
+      border-radius: 6px; padding: 0.85rem; margin-bottom: 0.5rem;
+    }
+    .lang-tag {
+      display: inline-block; padding: 1px 6px; border-radius: 3px;
+      font-size: 11px; font-weight: 500; margin-right: 0.3rem;
+      background: var(--bg-subtle); color: var(--text-secondary); border: 1px solid var(--border-default);
+    }
+    .formula-box {
+      background: var(--bg-canvas); border: 1px solid var(--border-default);
+      border-radius: 4px; padding: 0.6rem 0.8rem; font-family: var(--font-mono);
+      font-size: 11.5px; color: var(--text-secondary); line-height: 1.5; margin: 0.5rem 0;
+    }
+    .gap-bar { display: flex; height: 18px; border-radius: 3px; overflow: hidden; background: var(--bg-subtle); margin-top: 0.3rem; border: 1px solid var(--border-muted); }
+    .gap-bar-you { background: var(--accent-blue); transition: width 0.4s ease; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: #fff; }
+    .gap-bar-target { background: rgba(56,139,253,0.15); transition: width 0.4s ease; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; color: var(--accent-blue); }
+    
+    .benchmark-row { display: grid; grid-template-columns: 1.8fr 0.7fr 0.6fr 0.5fr; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border-muted); font-size: 12.5px; align-items: center; }
+    .benchmark-header { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.03em; }
+    
+    .section-header { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.5rem; }
+    
+    .resource-link {
+      display: inline-block; padding: 2px 7px; border-radius: 3px;
+      font-size: 11px; font-weight: 500; text-decoration: none;
+      background: var(--bg-subtle); color: var(--accent-blue); border: 1px solid var(--border-default);
+      margin-right: 0.3rem; margin-top: 0.2rem;
+    }
+    .resource-link:hover { background: var(--bg-active); border-color: var(--accent-blue); }
+    
+    .history-row {
+      display: grid; grid-template-columns: 1.2fr 0.6fr 0.6fr 0.6fr 0.6fr 0.6fr 0.9fr;
+      gap: 0.3rem; padding: 0.45rem 0; border-bottom: 1px solid var(--border-muted);
+      font-size: 12px; align-items: center;
     }
     
-    .input-field:focus {
-      border-color: var(--accent-primary);
-    }
-
-    label {
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.5rem;
-      display: block;
-    }
-
-    .sidebar {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-
-    .score-radial {
-      position: relative;
-      width: 140px;
-      height: 140px;
-      margin: 0 auto;
-    }
-
-    .score-number {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 2.25rem;
-      font-weight: 800;
-      color: var(--text-primary);
-    }
-
-    .slider-group {
-      background: rgba(255, 255, 255, 0.02);
-      border-radius: 12px;
-      padding: 1rem;
-      margin-bottom: 0.75rem;
-      border: 1px solid rgba(255,255,255,0.03);
-    }
-
-    .slider-label-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 0.5rem;
-    }
-
-    input[type="range"] {
-      width: 100%;
-      accent-color: var(--accent-primary);
-    }
-
-    .metric-value {
-      font-weight: 700;
-      color: var(--accent-secondary);
-    }
-
-    /* Match Pill */
-    .match-pill {
-      background: rgba(16, 185, 129, 0.1);
-      color: var(--accent-success);
-      border: 1px solid rgba(16, 185, 129, 0.2);
-      border-radius: 6px;
-      padding: 0.15rem 0.4rem;
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
+    @keyframes spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+    .spinning { animation: spin 0.8s linear infinite; display: inline-block; }
   </style>
 </head>
 <body>
-
   <header>
     <div class="header-content">
       <div class="logo-area">
-        <i data-lucide="eye" style="stroke: url(#gradient-color); stroke-width: 2.5;"></i>
-        DevLens AI
-        <span class="badge">ATS Portfolio Simulator</span>
+        <span>DevLens</span>
+        <span class="badge badge-blue">Portfolio Analytics</span>
+        <span class="badge">Deterministic Metric Pipeline</span>
       </div>
-      <div>
-        <a href="#stats" class="glow-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
-          <i data-lucide="user-check" style="width: 18px; height: 18px;"></i> Simulate Recruiter Review
-        </a>
+      <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+        <input type="text" class="input-field" id="github-user" placeholder="GitHub username..." style="width: 180px;">
+        <button class="btn-primary" id="scan-btn" onclick="analyzeGitHub()">
+          <span id="scan-icon">Run Evaluation</span>
+        </button>
+        <span id="rate-limit-info" class="badge" style="font-family: var(--font-mono);">Rate Limit: 60 req/hr</span>
       </div>
     </div>
   </header>
 
-  <!-- SVG gradient definition for Lucide icons -->
-  <svg width="0" height="0" style="position: absolute;">
-    <linearGradient id="gradient-color" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#6366f1" />
-      <stop offset="100%" stop-color="#06b6d4" />
-    </linearGradient>
-  </svg>
+  <!-- Execution Status Banner -->
+  <div id="scan-status" style="max-width: 1400px; margin: 0 auto 1rem; padding: 0 1rem; display: none;">
+    <div class="card" style="padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.75rem;">
+      <span id="status-icon" style="font-weight: 700; color: var(--accent-blue);">●</span>
+      <div style="flex-grow: 1;">
+        <div id="status-text" style="font-size: 13px; font-weight: 500;">Ready</div>
+        <div class="status-bar"><div id="status-bar-fill" class="status-bar-fill" style="width: 0%; background: var(--accent-blue);"></div></div>
+      </div>
+    </div>
+  </div>
 
   <div class="dashboard-grid">
-    <!-- Left Sidebar: Controls & Input Simulator -->
+    <!-- LEFT SIDEBAR -->
     <div class="sidebar">
-      <!-- Input Panel -->
-      <div class="card">
-        <h3 style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-          <i data-lucide="sliders" style="color: var(--accent-primary);"></i> Profile Controller
-        </h3>
-        
-        <div style="margin-bottom: 1.25rem;">
-          <label>Target Git Username / Zip</label>
-          <div style="display: flex; gap: 0.5rem;">
-            <input type="text" class="input-field" value="developer-candidate-2026" id="github-user">
-            <button class="glow-btn" style="padding: 0.75rem;" onclick="simulateScan()">
-              <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
-            </button>
-          </div>
+      <!-- Profile Metadata Card -->
+      <div class="card" style="text-align: center;">
+        <div id="avatar-area" style="margin-bottom: 0.75rem;">
+          <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--bg-subtle); margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid var(--border-default); color: var(--text-muted);">ID</div>
         </div>
-
-        <div style="border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
-          <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 1rem; letter-spacing: 0.05em;">
-            Manual Parameter Sliders (Simulation)
-          </h4>
-
-          <div class="slider-group">
-            <div class="slider-label-row">
-              <span style="font-size: 0.85rem;">Readme Quality</span>
-              <span class="metric-value" id="val-readme">80%</span>
-            </div>
-            <input type="range" id="slide-readme" min="0" max="100" value="80" oninput="updateLabel('readme', this.value)" onchange="updateMetrics()">
-          </div>
-
-          <div class="slider-group">
-            <div class="slider-label-row">
-              <span style="font-size: 0.85rem;">Test Coverage Ratio</span>
-              <span class="metric-value" id="val-test">45%</span>
-            </div>
-            <input type="range" id="slide-test" min="0" max="100" value="45" oninput="updateLabel('test', this.value)" onchange="updateMetrics()">
-          </div>
-
-          <div class="slider-group">
-            <div class="slider-label-row">
-              <span style="font-size: 0.85rem;">Commit Hygiene</span>
-              <span class="metric-value" id="val-commit">70%</span>
-            </div>
-            <input type="range" id="slide-commit" min="0" max="100" value="70" oninput="updateLabel('commit', this.value)" onchange="updateMetrics()">
-          </div>
-
-          <div class="slider-group">
-            <div class="slider-label-row">
-              <span style="font-size: 0.85rem;">Collaboration Index</span>
-              <span class="metric-value" id="val-collab">65%</span>
-            </div>
-            <input type="range" id="slide-collab" min="0" max="100" value="65" oninput="updateLabel('collab', this.value)" onchange="updateMetrics()">
-          </div>
+        <h3 id="profile-name" style="margin-bottom: 0.15rem; font-size: 15px; font-weight: 600;">Developer Target</h3>
+        <p id="profile-bio" style="font-size: 12px; color: var(--text-muted); margin-bottom: 0.75rem;">Query public GitHub repository data</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.3rem; border-top: 1px solid var(--border-muted); padding-top: 0.6rem;">
+          <div><div id="stat-repos" style="font-size: 15px; font-weight: 700; color: var(--text-primary); font-family: var(--font-mono);">—</div><div style="font-size: 11px; color: var(--text-muted);">Repositories</div></div>
+          <div><div id="stat-followers" style="font-size: 15px; font-weight: 700; color: var(--text-primary); font-family: var(--font-mono);">—</div><div style="font-size: 11px; color: var(--text-muted);">Followers</div></div>
+          <div><div id="stat-following" style="font-size: 15px; font-weight: 700; color: var(--text-primary); font-family: var(--font-mono);">—</div><div style="font-size: 11px; color: var(--text-muted);">Following</div></div>
         </div>
       </div>
 
-      <!-- Quick Stats Card -->
-      <div class="card" style="background: linear-gradient(180deg, rgba(99, 102, 241, 0.05) 0%, rgba(10, 11, 16, 0) 100%);">
-        <h4 style="margin-bottom: 0.75rem; color: var(--text-primary); font-size: 0.95rem;">Recruiter Filter Verdict</h4>
-        <div id="recruiter-status" style="font-size: 1.1rem; font-weight: 700; color: var(--accent-success); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-          <i data-lucide="check-circle" style="width: 20px; height: 20px;"></i> Auto-Pass Selected
+      <!-- Portfolio Quality Index (PQI) Gauge -->
+      <div class="card" style="text-align: center;">
+        <div class="section-header">Portfolio Quality Index (PQI)</div>
+        <div class="score-radial">
+          <svg class="progress-ring" width="130" height="130">
+            <circle stroke="var(--bg-subtle)" stroke-width="8" fill="transparent" r="54" cx="65" cy="65" />
+            <circle class="progress-ring__circle" id="radial-pqs" stroke="var(--accent-blue)" stroke-width="8" stroke-dasharray="339.29" stroke-dashoffset="339.29" stroke-linecap="round" fill="transparent" r="54" cx="65" cy="65" />
+          </svg>
+          <div class="score-number" id="lbl-pqs">—</div>
+          <div class="score-sublabel">/ 100</div>
         </div>
-        <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4;">
-          This profile exceeds the standard threshold parameters (65%) required by corporate automated scrapers.
-        </p>
+        <div class="formula-box" style="text-align: left; margin-top: 0.75rem;">
+          PQI = 0.35(Doc) + 0.30(Test)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.20(Commit) + 0.15(Collab)
+        </div>
+      </div>
+
+      <!-- Classification / Threshold Evaluation -->
+      <div class="card">
+        <div class="section-header">Evaluation Category</div>
+        <div id="recruiter-status" style="font-size: 14px; font-weight: 600; color: var(--text-muted); margin-bottom: 0.3rem;">Awaiting Execution</div>
+        <p id="recruiter-desc" style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">Enter a username to evaluate portfolio metrics against predefined thresholds.</p>
+        <div style="margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px solid var(--border-muted);">
+          <div class="section-header" style="margin-bottom: 0.2rem;">Classification Tier</div>
+          <div id="tier-placement" style="font-size: 13px; font-weight: 600; color: var(--text-muted);">—</div>
+        </div>
+      </div>
+      
+      <!-- System Scope Specification -->
+      <div class="card" style="background: var(--bg-canvas);">
+        <div class="section-header">System Scope & Specifications</div>
+        <ul style="font-size: 11.5px; color: var(--text-secondary); padding-left: 1.1rem; line-height: 1.6;">
+          <li>Public repository sampling (top 5 active)</li>
+          <li>Deterministic rule-based metrics extraction</li>
+          <li>Jaccard set-similarity skill alignment</li>
+          <li>Local persistence via SQLite engine</li>
+        </ul>
       </div>
     </div>
 
-      <!-- Local Zip Code File Drop Zone Card [NEW feature] -->
-      <div class="card" style="display: flex; flex-direction: column; justify-content: center; min-height: 250px;">
-        <h3 style="margin-bottom: 1rem; color: var(--text-secondary); font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
-          <i data-lucide="file-archive" style="color: var(--accent-secondary);"></i> Offline Code Ingestion (.ZIP)
-        </h3>
-        <div id="drop-zone" style="border: 2px dashed rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 2rem 1.5rem; text-align: center; cursor: pointer; transition: background 0.2s;" ondragover="event.preventDefault(); this.style.borderColor='var(--accent-primary)';" ondragleave="this.style.borderColor='rgba(255,255,255,0.15)';" ondrop="handleZipDrop(event)">
-          <i data-lucide="upload-cloud" style="width: 36px; height: 36px; color: var(--text-muted); margin-bottom: 0.75rem;"></i>
-          <p style="font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem;">Drag & drop your local project ZIP file here</p>
-          <span style="font-size: 0.75rem; color: var(--text-muted);">Parses file tree headers offline</span>
-        </div>
-      </div>
-
-      <!-- Big Score Overview Card -->
-      <div class="card" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; min-height: 250px;">
-        <h3 style="margin-bottom: 1rem; color: var(--text-secondary); font-size: 1rem; font-weight: 600;">PORTFOLIO QUALITY SCORE</h3>
-        <div class="score-radial">
-          <svg class="progress-ring" width="140" height="140">
-            <circle class="progress-ring__circle-bg" stroke="rgba(255,255,255,0.03)" stroke-width="8" fill="transparent" r="58" cx="70" cy="70" />
-            <circle class="progress-ring__circle" id="radial-pqs" stroke="url(#gradient-color)" stroke-width="8" stroke-dasharray="364.4" stroke-dashoffset="100" stroke-linecap="round" fill="transparent" r="58" cx="70" cy="70" />
-          </svg>
-          <div class="score-number" id="lbl-pqs">72</div>
-        </div>
-        <div style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted);">
-          Calculated using linear metric validation algorithms
-        </div>
-      </div>
-
-      <!-- Accuracy Verification & Validation Panel -->
+    <!-- MAIN DASHBOARD CONTENT -->
+    <div class="main-panel-grid">
+      <!-- 4 Core Metric Breakdown -->
       <div class="card">
-        <h3 style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-          <i data-lucide="shield-check" style="color: var(--accent-success);"></i> Accuracy & Verification
-        </h3>
-        <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 1rem; margin-bottom: 1rem;">
+        <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 0.85rem;">Evaluation Metrics</h3>
+        <div>
+          <div style="margin-bottom: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 0.15rem;">
+              <span>Documentation Structure (35%)</span><span id="m-doc" class="mono-text" style="font-weight: 600; color: var(--accent-blue);">—</span>
+            </div>
+            <div class="status-bar"><div id="bar-doc" class="status-bar-fill" style="width: 0%; background: var(--accent-blue);"></div></div>
+            <div id="doc-details" style="font-size: 11.5px; color: var(--text-muted); margin-top: 0.25rem;"></div>
+          </div>
+          <div style="margin-bottom: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 0.15rem;">
+              <span>Test Suite Coverage Ratio (30%)</span><span id="m-test" class="mono-text" style="font-weight: 600; color: var(--accent-blue);">—</span>
+            </div>
+            <div class="status-bar"><div id="bar-test" class="status-bar-fill" style="width: 0%; background: var(--accent-blue);"></div></div>
+            <div id="test-details" style="font-size: 11.5px; color: var(--text-muted); margin-top: 0.25rem;"></div>
+          </div>
+          <div style="margin-bottom: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 0.15rem;">
+              <span>Commit Message Hygiene (20%)</span><span id="m-commit" class="mono-text" style="font-weight: 600; color: var(--accent-blue);">—</span>
+            </div>
+            <div class="status-bar"><div id="bar-commit" class="status-bar-fill" style="width: 0%; background: var(--accent-blue);"></div></div>
+            <div id="commit-details" style="font-size: 11.5px; color: var(--text-muted); margin-top: 0.25rem;"></div>
+          </div>
           <div>
-            <div style="font-size: 1.75rem; font-weight: 800; color: var(--accent-success);">r = 0.81</div>
-            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Pearson Correlation Index</div>
-            <span class="match-pill">Highly Correlated</span>
-          </div>
-          <div style="font-size: 0.8rem; color: var(--text-secondary); border-left: 1px solid var(--border-color); padding-left: 1rem; line-height: 1.5;">
-            Tested against 20 independent student portfolios graded by 3 senior faculty expert reviewers. An r-value above 0.75 mathematically guarantees our score aligns with human validation standards.
-          </div>
-        </div>
-
-        <div style="background: rgba(255,255,255,0.02); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
-          <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.25rem;">
-            <span>System Scoring Confidence</span>
-            <span style="font-weight: 700; color: var(--accent-success);">94.3%</span>
-          </div>
-          <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
-            <div style="height: 100%; width: 94.3%; background: var(--accent-success); border-radius: 3px;"></div>
+            <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 0.15rem;">
+              <span>Normalized Collaboration (15%)</span><span id="m-collab" class="mono-text" style="font-weight: 600; color: var(--accent-blue);">—</span>
+            </div>
+            <div class="status-bar"><div id="bar-collab" class="status-bar-fill" style="width: 0%; background: var(--accent-blue);"></div></div>
+            <div id="collab-details" style="font-size: 11.5px; color: var(--text-muted); margin-top: 0.25rem;"></div>
           </div>
         </div>
       </div>
 
-      <!-- Recruiter Filter Thresholds Simulator Panel [NEW feature] -->
+      <!-- Mathematical Formulation & Approach -->
       <div class="card">
-        <h3 style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-          <i data-lucide="gauge" style="color: var(--accent-primary);"></i> Recruiters' Cutoff Thresholds
-        </h3>
-        <div style="display: flex; flex-direction: column; gap: 0.8rem; font-size: 0.85rem; color: var(--text-secondary);">
-          <div style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color);">
-            <span>Tier 1 (FAANG / Big Tech)</span>
-            <span style="font-weight: 700; color: var(--accent-secondary);">Cutoff: 85%</span>
+        <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 0.6rem;">Formulation & Grounding</h3>
+        <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
+          <div style="margin-bottom: 0.5rem;">
+            <strong style="color: var(--text-primary);">Documentation:</strong> Base64 text parsing validating presence of Install, Usage, API reference, Code blocks, and Licensing.
           </div>
-          <div style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color);">
-            <span>Tier 2 (Mid-Sized / Series A)</span>
-            <span style="font-weight: 700; color: var(--accent-success);">Cutoff: 65%</span>
+          <div style="margin-bottom: 0.5rem;">
+            <strong style="color: var(--text-primary);">Test Ratio:</strong> Traverses repository tree: <code class="mono-text">ratio = N_tests / N_source</code>. Scaled via <code class="mono-text">min(100, ratio × 250)</code>.
           </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span>Tier 3 (Service / Consulting)</span>
-            <span style="font-weight: 700; color: var(--accent-warning);">Cutoff: 45%</span>
+          <div style="margin-bottom: 0.5rem;">
+            <strong style="color: var(--text-primary);">Commit Hygiene:</strong> Length validation (&gt;10 chars), non-generic regex filtering, Conventional Commits format bonus.
+          </div>
+          <div>
+            <strong style="color: var(--text-primary);">Collaboration:</strong> Log-normalized metric: <code class="mono-text">log₂(1+stars)×5 + log₂(1+forks)×8 + issues</code>.
           </div>
         </div>
       </div>
 
-      <!-- Tech Stack & Skill Matrix Charts -->
-      <div class="card span-full" style="min-height: 350px;">
-        <h3 style="margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
-          <span style="display: flex; align-items: center; gap: 0.5rem;">
-            <i data-lucide="bar-chart-3" style="color: var(--accent-secondary);"></i> Developer Tech Stack & Open-Source Gap
-          </span>
-          <span class="badge" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-secondary); border-color: rgba(6, 182, 212, 0.25);">
-            4 Target Languages Analyzed
-          </span>
-        </h3>
-        <div style="height: 260px; position: relative;">
-          <canvas id="skills-chart"></canvas>
-        </div>
+      <!-- Language Distribution -->
+      <div class="card span-full" style="min-height: 250px;">
+        <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 0.75rem;">Detected Language Profile</h3>
+        <div style="height: 180px; position: relative;"><canvas id="lang-chart"></canvas></div>
       </div>
 
-      <!-- Recommendation & Roadmap Cards -->
+      <!-- Detected Stack & Extracted Frameworks -->
       <div class="card span-full">
-        <h3 style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-          <i data-lucide="route" style="color: var(--accent-warning);"></i> Suggested Open-Source Readiness Roadmap
-        </h3>
-        
-        <div style="display: grid; grid-template-columns: 1fr; gap: 1rem;" id="roadmap-items">
-          <!-- Item 1 -->
-          <div style="display: flex; gap: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; align-items: flex-start;">
-            <div style="background: rgba(99, 102, 241, 0.1); border: 1px dashed var(--accent-primary); border-radius: 8px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-              <span style="font-weight: 700; color: var(--accent-primary);">1</span>
-            </div>
-            <div>
-              <h4 style="font-size: 0.95rem; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.5rem;">
-                Improve Git Hygiene <span class="badge" style="padding: 0.1rem 0.4rem; font-size: 0.65rem;">Priority: High</span>
-              </h4>
-              <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">
-                Write descriptive commit messages (> 10 chars). Avoid generic tags like "fixed issues". Recruiters' scanner engines flag low-detail logs as poor documentation.
-              </p>
-            </div>
-          </div>
-          <!-- Item 2 -->
-          <div style="display: flex; gap: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; align-items: flex-start;">
-            <div style="background: rgba(6, 182, 212, 0.1); border: 1px dashed var(--accent-secondary); border-radius: 8px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-              <span style="font-weight: 700; color: var(--accent-secondary);">2</span>
-            </div>
-            <div>
-              <h4 style="font-size: 0.95rem; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.5rem;">
-                Add Unit Testing Patterns <span class="badge" style="padding: 0.1rem 0.4rem; font-size: 0.65rem; background: rgba(16, 185, 129, 0.15); color: var(--accent-success); border-color: rgba(16,185,129,0.25);">Recommended</span>
-              </h4>
-              <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">
-                Include a standard `__tests__` or `test/` directory. Even simple mock assertions boost the system's Test Ratio score by up to 25%.
-              </p>
-            </div>
-          </div>
-          <!-- Item 3 -->
-          <div style="display: flex; gap: 1rem; align-items: flex-start;">
-            <div style="background: rgba(245, 158, 11, 0.1); border: 1px dashed var(--accent-warning); border-radius: 8px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-              <span style="font-weight: 700; color: var(--accent-warning);">3</span>
-            </div>
-            <div>
-              <h4 style="font-size: 0.95rem; margin-bottom: 0.25rem;">Target First Contribution: `axios/axios`</h4>
-              <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">
-                Matches your profile JavaScript/Node stack. Seek issue labels marked with `#Good-First-Issue` to establish public PR registry footprint.
-              </p>
-            </div>
-          </div>
+        <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 0.5rem;">Extracted Technology & Framework Stack</h3>
+        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 0.6rem;">Identified from repository manifest signatures, import trees, and configuration files.</p>
+        <div id="stack-tags" style="display: flex; flex-wrap: wrap; gap: 0.35rem;">
+          <span style="font-size: 12px; color: var(--text-muted);">Execute evaluation to extract framework competencies.</span>
+        </div>
+      </div>
+
+      <!-- Automated Readiness Diagnostic & Action Plan -->
+      <div class="card span-full" style="background: var(--bg-canvas); border-left: 3px solid var(--accent-blue);">
+        <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-primary);">Automated Portfolio Remediation Diagnostic</h3>
+        <div id="diagnostic-plan" style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+          Awaiting evaluation to generate targeted portfolio improvement actions.
+        </div>
+      </div>
+
+      <!-- Open-Source Readiness (OSR) via Jaccard Index -->
+      <div class="card span-full">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.25rem;">
+          <h3 style="font-size: 14px; font-weight: 600;">Open-Source Readiness (OSR) — Jaccard Skill-Gap Analysis</h3>
+          <span class="badge" style="font-family: var(--font-mono);">J(A,B) = |A ∩ B| / |A ∪ B|</span>
+        </div>
+        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 0.85rem;">
+          Computes Jaccard set-similarity against target open-source repositories across language and framework requirements.
+        </p>
+        <div id="osr-panel">
+          <p style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 1.25rem;">Execute evaluation to compute skill alignment.</p>
+        </div>
+      </div>
+
+      <!-- Repository-Level Analysis -->
+      <div class="card span-full">
+        <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 0.75rem;">Repository Metric Breakdown</h3>
+        <div id="repo-list">
+          <p style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 1.25rem;">No repositories loaded.</p>
+        </div>
+      </div>
+
+      <!-- Benchmark Verification Suite -->
+      <div class="card span-full">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.25rem;">
+          <h3 style="font-size: 14px; font-weight: 600;">Empirical Benchmark Verification</h3>
+          <button class="btn-secondary" onclick="runBenchmark()" id="bench-btn">
+            <span id="bench-icon">Run Control Suite</span>
+          </button>
+        </div>
+        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 0.75rem;">
+          Evaluates pipeline consistency across known reference repositories (joke/empty repos to enterprise frameworks).
+        </p>
+        <div class="benchmark-row benchmark-header">
+          <span>Repository</span><span>Expected Tier</span><span>Calculated PQI</span><span>Validation</span>
+        </div>
+        <div id="bench-rows">
+          <p style="font-size: 12px; color: var(--text-muted); padding: 0.75rem 0; text-align: center;">Click "Run Control Suite" to execute benchmark validation.</p>
+        </div>
+      </div>
+
+      <!-- SQLite Persistent Log -->
+      <div class="card span-full">
+        <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 0.25rem;">Evaluation Log (SQLite Database)</h3>
+        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 0.75rem;">Audit log persisted to local SQLite database engine.</p>
+        <div class="history-row benchmark-header">
+          <span>Username</span><span>PQI</span><span>Doc</span><span>Test</span><span>Commit</span><span>Collab</span><span>Timestamp</span>
+        </div>
+        <div id="history-rows">
+          <p style="font-size: 12px; color: var(--text-muted); padding: 0.75rem 0; text-align: center;">No stored records.</p>
+        </div>
+      </div>
+
+      <!-- Literature & References -->
+      <div class="card span-full" style="background: var(--bg-canvas);">
+        <h3 style="font-size: 13px; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-secondary);">Research & Literature Foundations</h3>
+        <div style="font-size: 11.5px; color: var(--text-muted); line-height: 1.6;">
+          1. <strong>Jaccard, P. (1912).</strong> <em>The Distribution of the Flora in the Alpine Zone.</em> — Theoretical basis for set-theoretic skill gap calculation.<br>
+          2. <strong>Kalliamvakou, E. et al. (2014).</strong> <em>The Promises and Perils of Mining GitHub.</em> MSR 2014. — Methodology for filtering noise in GitHub data mining.<br>
+          3. <strong>Dabbish, L. et al. (2012).</strong> <em>Social Coding in GitHub: Transparency and Collaboration.</em> CSCW 2012. — Grounding for collaboration signal evaluation.
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    // Initialize Lucide icons
-    lucide.createIcons();
-
-    // Chart.js initialization
-    const ctx = document.getElementById('skills-chart').getContext('2d');
-    
-    // Create gradient fill
-    const grad1 = ctx.createLinearGradient(0, 0, 0, 250);
-    grad1.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
-    grad1.addColorStop(1, 'rgba(99, 102, 241, 0.02)');
-    
-    const grad2 = ctx.createLinearGradient(0, 0, 0, 250);
-    grad2.addColorStop(0, 'rgba(6, 182, 212, 0.4)');
-    grad2.addColorStop(1, 'rgba(6, 182, 212, 0.02)');
-
-    const skillsChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['JavaScript', 'HTML/CSS', 'Python', 'TypeScript'],
-        datasets: [
-          {
-            label: 'Your Skill Profile (%)',
-            data: [85, 90, 40, 30],
-            backgroundColor: grad1,
-            borderColor: '#6366f1',
-            borderWidth: 2,
-            borderRadius: 6
-          },
-          {
-            label: 'Target Repository Stack Requirement (%)',
-            data: [75, 50, 80, 70],
-            backgroundColor: grad2,
-            borderColor: '#06b6d4',
-            borderWidth: 2,
-            borderRadius: 6
-          }
-        ]
-      },
+    // CHART SETUP
+    const langCtx = document.getElementById('lang-chart').getContext('2d');
+    const langChart = new Chart(langCtx, {
+      type: 'doughnut',
+      data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 1, borderColor: '#161b22' }] },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: 100,
-            grid: {
-              color: 'rgba(255, 255, 255, 0.05)'
-            },
-            ticks: {
-              color: '#94a3b8'
-            }
-          },
-          x: {
-            grid: {
-              display: false
-            },
-            ticks: {
-              color: '#94a3b8'
-            }
-          }
-        },
-        plugins: {
-          legend: {
-            labels: {
-              color: '#f8fafc',
-              font: {
-                family: 'Outfit'
-              }
-            }
-          }
-        }
+        responsive: true, maintainAspectRatio: false,
+        animation: { duration: 300 },
+        plugins: { legend: { position: 'right', labels: { color: '#8b949e', font: { family: '-apple-system, sans-serif', size: 11 }, padding: 8 } } }
       }
     });
 
-    function updateLabel(metric, val) {
-      document.getElementById('val-' + metric).innerText = val + '%';
+    const LANG_COLORS = {
+      JavaScript:'#f1e05a', TypeScript:'#3178c6', Python:'#3572A5', HTML:'#e34c26',
+      CSS:'#563d7c', Java:'#b07219', Go:'#00ADD8', Rust:'#dea584', Ruby:'#701516',
+      'C++':'#f34b7d', C:'#555555', Shell:'#89e051', PHP:'#4F5D95', Swift:'#F05138',
+      Kotlin:'#A97BFF', Dart:'#00B4AB', Vue:'#41b883', Astro:'#ff5a03'
+    };
+
+    const LEARNING_RESOURCES = {
+      JavaScript: [{ name: 'MDN JavaScript Guide', url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript' }],
+      TypeScript: [{ name: 'TypeScript Handbook', url: 'https://www.typescriptlang.org/docs/handbook/' }],
+      Python: [{ name: 'Official Python Documentation', url: 'https://docs.python.org/3/tutorial/' }],
+      HTML: [{ name: 'MDN HTML Reference', url: 'https://developer.mozilla.org/en-US/docs/Web/HTML' }],
+      CSS: [{ name: 'MDN CSS Reference', url: 'https://developer.mozilla.org/en-US/docs/Web/CSS' }],
+      Rust: [{ name: 'The Rust Programming Language Book', url: 'https://doc.rust-lang.org/book/' }],
+      Go: [{ name: 'A Tour of Go', url: 'https://go.dev/tour/' }],
+      Ruby: [{ name: 'Ruby Programming Guide', url: 'https://www.ruby-lang.org/en/documentation/' }],
+      Java: [{ name: 'Oracle Java Documentation', url: 'https://docs.oracle.com/javase/tutorial/' }],
+      Shell: [{ name: 'POSIX Shell Scripting Guide', url: 'https://www.shellscript.sh/' }],
+      Assembly: [{ name: 'x86 Assembly Architecture', url: 'https://www.cs.virginia.edu/~evans/cs216/guides/x86.html' }]
+    };
+
+    const TARGET_REPOS = [
+      { name: 'facebook/react', reqs: ['JavaScript','TypeScript','React','Jest','HTML','CSS'], difficulty: 'Advanced', stars: '224k' },
+      { name: 'expressjs/express', reqs: ['JavaScript','Node.js','Express','Mocha','HTML'], difficulty: 'Intermediate', stars: '62k' },
+      { name: 'django/django', reqs: ['Python','Django','Pytest','SQL','HTML','CSS'], difficulty: 'Advanced', stars: '78k' },
+      { name: 'pallets/flask', reqs: ['Python','Flask','Jinja','Pytest','HTML','CSS'], difficulty: 'Beginner', stars: '67k' },
+      { name: 'rust-lang/rust', reqs: ['Rust','Cargo','Python','Shell'], difficulty: 'Expert', stars: '95k' },
+      { name: 'golang/go', reqs: ['Go','Assembly','Shell'], difficulty: 'Expert', stars: '121k' },
+      { name: 'vuejs/vue', reqs: ['JavaScript','TypeScript','Vue','Vite','HTML'], difficulty: 'Intermediate', stars: '207k' },
+      { name: 'fastapi/fastapi', reqs: ['Python','FastAPI','Pydantic','Pytest'], difficulty: 'Intermediate', stars: '75k' }
+    ];
+
+    const FRAMEWORK_PATTERNS = {
+      'React': /react|react-dom|@types\/react/i,
+      'Express': /express|body-parser/i,
+      'Vue': /vue|@vue\/core|vue-router/i,
+      'Next.js': /next|next\/router/i,
+      'Jest': /jest|ts-jest|@types\/jest/i,
+      'Mocha': /mocha|chai/i,
+      'Tailwind': /tailwindcss|postcss/i,
+      'Vite': /vite|@vitejs/i,
+      'Django': /django/i,
+      'Flask': /flask/i,
+      'FastAPI': /fastapi|uvicorn/i,
+      'Pytest': /pytest/i,
+      'Pydantic': /pydantic/i,
+      'Pandas': /pandas|numpy/i,
+      'Spring': /springframework|spring-boot/i,
+      'JUnit': /junit/i,
+      'Cargo': /cargo/i,
+      'Node.js': /node|npm|yarn/i
+    };
+
+    const BENCHMARK_REPOS = [
+      { owner: 'kelseyhightower', repo: 'nocode', expectedTier: 'Low', tierNum: 1, reason: 'Joke repository (zero codebase)' },
+      { owner: 'expressjs', repo: 'express', expectedTier: 'Enterprise', tierNum: 4, reason: 'High test ratio, structured documentation' },
+      { owner: 'pallets', repo: 'flask', expectedTier: 'High', tierNum: 3, reason: 'Standard modular Python architecture' },
+      { owner: 'brianchandotcom', repo: 'liferay-portal', expectedTier: 'Enterprise', tierNum: 4, reason: 'Enterprise multi-module testing' },
+      { owner: 'jezen', repo: 'is-thirteen', expectedTier: 'Low', tierNum: 1, reason: 'Minimal novelty codebase' }
+    ];
+
+    let apiCallsUsed = 0;
+    async function ghFetch(url) {
+      apiCallsUsed++;
+      const res = await fetch(url, { headers: { 'Accept': 'application/vnd.github.v3+json' } });
+      const remaining = res.headers.get('X-RateLimit-Remaining');
+      if (remaining !== null) {
+        document.getElementById('rate-limit-info').textContent = `Rate Limit: ${remaining}/60 remaining`;
+        document.getElementById('rate-limit-info').style.color = parseInt(remaining) < 10 ? 'var(--accent-red)' : 'var(--text-secondary)';
+      }
+      return res;
     }
 
-    // Debounced and throttled rendering key to prevent paint flickering
-    let renderPending = false;
+    function scoreReadmeContent(readmeText) {
+      let score = 0; const checks = {};
+      if (readmeText.trim().length > 0) { score += 5; checks.exists = true; }
+      const wc = readmeText.split(/\s+/).filter(w => w.length > 0).length;
+      if (wc > 50) score += 5; if (wc > 150) score += 5; if (wc > 400) score += 5;
+      checks.wordCount = wc;
+      if (/#{1,3}\s*(install|getting\s*started|setup|quick\s*start)/i.test(readmeText)) { score += 15; checks.hasInstall = true; }
+      if (/#{1,3}\s*(usage|example|how\s*to\s*use|demo|tutorial)/i.test(readmeText)) { score += 15; checks.hasUsage = true; }
+      if (/#{1,3}\s*(api|reference|methods|endpoints|parameters|configuration)/i.test(readmeText)) { score += 10; checks.hasAPI = true; }
+      if (/contribut|pull\s*request|CONTRIBUTING/i.test(readmeText)) { score += 10; checks.hasContributing = true; }
+      if (/licen[sc]e|MIT|Apache|GPL|BSD|ISC/i.test(readmeText)) { score += 5; checks.hasLicense = true; }
+      const cb = (readmeText.match(/```/g) || []).length / 2;
+      if (cb >= 1) { score += 10; checks.codeBlocks = Math.floor(cb); }
+      return { score: Math.min(100, score), checks };
+    }
 
-    // Scoring math implementation
-    function updateMetrics() {
-      if (renderPending) return;
-      renderPending = true;
+    function scoreTestRatio(fileTree) {
+      const codeExts = /\.(js|jsx|ts|tsx|py|java|go|rs|rb|c|cpp|cs|php|swift|kt|scala|dart)$/i;
+      const testP = /test|spec|__test__|\.test\.|\.spec\.|_test\.|_spec\./i;
+      const code = fileTree.filter(f => f.type === 'blob' && codeExts.test(f.path));
+      const tests = code.filter(f => testP.test(f.path));
+      const src = code.filter(f => !testP.test(f.path));
+      const ratio = tests.length / (src.length || 1);
+      return { score: Math.min(100, Math.round(ratio * 250)), testFiles: tests.length, sourceFiles: src.length, ratio: Math.round(ratio * 100) };
+    }
 
-      window.requestAnimationFrame(async () => {
-        // Get values from sliders
-        const readme = parseInt(document.getElementById('slide-readme').value);
-        const test = parseInt(document.getElementById('slide-test').value);
-        const commit = parseInt(document.getElementById('slide-commit').value);
-        const collab = parseInt(document.getElementById('slide-collab').value);
-        const username = document.getElementById('github-user').value || 'candidate';
+    function scoreCommitMessages(commits) {
+      if (!commits || !commits.length) return { score: 0, total: 0, good: 0, avgLength: 0, conventionalPct: 0 };
+      const generic = /^(fix|update|test|wip|initial|merge|bump|minor|typo|oops|asdf|temp|stuff|changes|commit|edited|modified|added|removed|cleanup|refactor|misc|more)\b/i;
+      const conv = /^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?:/i;
+      let good = 0, hasConv = 0, totalLen = 0;
+      commits.forEach(c => {
+        const msg = (c.commit?.message || '').split('\n')[0];
+        totalLen += msg.length;
+        if (msg.length > 10 && !generic.test(msg.trim()) && !/^Merge (pull request|branch)/i.test(msg)) good++;
+        if (conv.test(msg.trim())) hasConv++;
+      });
+      let score = Math.round((good / commits.length) * 80);
+      if (hasConv / commits.length > 0.3) score += 10;
+      if (hasConv / commits.length > 0.6) score += 10;
+      return { score: Math.min(100, score), total: commits.length, good, avgLength: Math.round(totalLen / commits.length), conventionalPct: Math.round((hasConv / commits.length) * 100) };
+    }
 
+    function scoreCommunity(repos) {
+      let total = 0;
+      repos.forEach(r => { total += Math.min(100, Math.log2(1+r.stargazers_count)*5 + Math.log2(1+r.forks_count)*8 + (r.has_issues?10:0) + Math.log2(1+r.open_issues_count)*3); });
+      return Math.round(total / (repos.length || 1));
+    }
+
+    function jaccardSimilarity(setA, setB) {
+      const union = new Set([...setA, ...setB]);
+      const inter = setA.filter(l => setB.includes(l));
+      return union.size > 0 ? inter.length / union.size : 0;
+    }
+
+    async function analyzeGitHub() {
+      const username = document.getElementById('github-user').value.trim();
+      if (!username) { alert('Enter a GitHub username'); return; }
+      const scanBtn = document.getElementById('scan-btn');
+      const statusEl = document.getElementById('scan-status');
+      const statusText = document.getElementById('status-text');
+      const statusBar = document.getElementById('status-bar-fill');
+
+      scanBtn.disabled = true;
+      statusEl.style.display = 'block';
+      statusText.textContent = 'Querying user metadata from GitHub API...';
+      statusBar.style.width = '15%';
+      apiCallsUsed = 0;
+
+      try {
+        const userRes = await ghFetch(`https://api.github.com/users/${username}`);
+        if (userRes.status === 403) throw new Error('GitHub REST API rate limit reached (60/hr). Please try again shortly.');
+        if (userRes.status === 404) throw new Error(`User "${username}" not found.`);
+        if (!userRes.ok) throw new Error(`API error HTTP ${userRes.status}`);
+        const user = await userRes.json();
+
+        document.getElementById('avatar-area').innerHTML = `<img src="${user.avatar_url}" style="width:64px;height:64px;border-radius:50%;border:1px solid var(--border-default);" alt="${user.login}">`;
+        document.getElementById('profile-name').textContent = user.name || user.login;
+        document.getElementById('profile-bio').textContent = user.bio || 'Public Developer Profile';
+        document.getElementById('stat-repos').textContent = user.public_repos;
+        document.getElementById('stat-followers').textContent = user.followers;
+        document.getElementById('stat-following').textContent = user.following;
+
+        statusText.textContent = 'Fetching repository manifest...';
+        statusBar.style.width = '30%';
+
+        const reposRes = await ghFetch(`https://api.github.com/users/${username}/repos?per_page=30&sort=pushed`);
+        if (reposRes.status === 403) throw new Error('API limit reached during repository manifest fetch.');
+        const allRepos = await reposRes.json();
+        const repos = allRepos.filter(r => !r.fork);
+        const limit = Math.min(repos.length, 5);
+
+        statusText.textContent = `Analyzing ${limit} repository trees...`;
+        statusBar.style.width = '45%';
+
+        let totDoc = 0, totTest = 0, totCommit = 0;
+        const langMap = {}, repoResults = [], allDocC = [], allTestD = [], allCommitD = [];
+        const detectedFrameworks = new Set();
+
+        for (let i = 0; i < limit; i++) {
+          const repo = repos[i];
+          statusText.textContent = `Evaluating [${i+1}/${limit}]: ${repo.name}...`;
+          statusBar.style.width = `${45 + (i/limit)*45}%`;
+          if (repo.language) langMap[repo.language] = (langMap[repo.language]||0) + 1;
+
+          let doc = { score: 0, checks: {} };
+          let readmeText = '';
+          try {
+            const r = await ghFetch(`https://api.github.com/repos/${username}/${repo.name}/readme`);
+            if (r.ok) {
+              const d = await r.json();
+              readmeText = atob(d.content.replace(/\n/g,''));
+              doc = scoreReadmeContent(readmeText);
+            }
+          } catch(e) {}
+          totDoc += doc.score; allDocC.push({ repo: repo.name, ...doc });
+
+          let test = { score: 0, testFiles: 0, sourceFiles: 0, ratio: 0 };
+          let maxDepth = 1;
+          try {
+            const r = await ghFetch(`https://api.github.com/repos/${username}/${repo.name}/git/trees/HEAD?recursive=1`);
+            if (r.ok) {
+              const d = await r.json();
+              const tree = d.tree || [];
+              test = scoreTestRatio(tree);
+              tree.forEach(item => {
+                const depth = (item.path.match(/\//g) || []).length + 1;
+                if (depth > maxDepth) maxDepth = depth;
+                Object.keys(FRAMEWORK_PATTERNS).forEach(fw => {
+                  if (FRAMEWORK_PATTERNS[fw].test(item.path)) detectedFrameworks.add(fw);
+                });
+              });
+            }
+          } catch(e) {}
+          totTest += test.score; allTestD.push({ repo: repo.name, ...test });
+
+          Object.keys(FRAMEWORK_PATTERNS).forEach(fw => {
+            if (FRAMEWORK_PATTERNS[fw].test(readmeText)) detectedFrameworks.add(fw);
+          });
+
+          let commit = { score: 0, total: 0, good: 0, avgLength: 0, conventionalPct: 0 };
+          try {
+            const r = await ghFetch(`https://api.github.com/repos/${username}/${repo.name}/commits?per_page=20`);
+            if (r.ok) {
+              const d = await r.json();
+              commit = scoreCommitMessages(d);
+            }
+          } catch(e) {}
+          totCommit += commit.score; allCommitD.push({ repo: repo.name, ...commit });
+
+          repoResults.push({
+            name: repo.name, description: repo.description || 'No description provided.',
+            language: repo.language || 'Unknown', stars: repo.stargazers_count,
+            forks: repo.forks_count, url: repo.html_url,
+            docScore: doc.score, docChecks: doc.checks,
+            testScore: test.score, testFiles: test.testFiles, sourceFiles: test.sourceFiles, testRatio: test.ratio,
+            commitScore: commit.score, goodCommits: commit.good, totalCommits: commit.total,
+            commitAvgLen: commit.avgLength, conventionalPct: commit.conventionalPct,
+            maxDepth: Math.min(maxDepth, 6),
+            license: repo.license ? repo.license.spdx_id || repo.license.name : (doc.checks.hasLicense ? 'Permissive (README)' : 'Unspecified')
+          });
+        }
+        repos.slice(limit).forEach(r => { if (r.language) langMap[r.language] = (langMap[r.language]||0) + 1; });
+
+        statusText.textContent = 'Aggregating metric vectors & saving record...';
+        statusBar.style.width = '95%';
+
+        const n = Math.max(repoResults.length, 1);
+        const docAvg = Math.round(totDoc/n), testAvg = Math.round(totTest/n), commitAvg = Math.round(totCommit/n);
+        const collab = scoreCommunity(repos.slice(0, limit));
+        const pqs = Math.round((docAvg*0.35)+(testAvg*0.30)+(commitAvg*0.20)+(collab*0.15));
+
+        let tier = pqs >= 85 ? 'Tier 1' : (pqs >= 65 ? 'Tier 2' : (pqs >= 45 ? 'Tier 3' : 'Below Tier 3'));
+
+        // Persist to SQLite
         try {
-          // Send inputs to backend scoring engine API
-          const response = await fetch('http://localhost:5000/api/analyze', {
+          await fetch('/api/scan', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              username,
-              readmeScore: readme,
-              testScore: test,
-              commitScore: commit,
-              collabScore: collab
+              username, pqs_score: pqs, doc_score: docAvg, test_score: testAvg,
+              commit_score: commitAvg, collab_score: collab,
+              repos_scanned: repoResults.length,
+              languages: Object.keys(langMap), tier
             })
           });
+        } catch(e) {}
 
-          if (response.ok) {
-            const result = await response.json();
-            
-            // Update radial indicator and labels
-            const pqs = result.portfolioQualityScore;
-            document.getElementById('lbl-pqs').innerText = pqs;
-            
-            const circle = document.getElementById('radial-pqs');
-            const circumference = 364.4;
-            const offset = circumference - (pqs / 100) * circumference;
-            circle.style.strokeDashoffset = offset;
+        const devStack = [...new Set([...Object.keys(langMap), ...detectedFrameworks])];
 
-            // Update Verdict
-            const verdictEl = document.getElementById('recruiter-status');
-            if (result.recruiterVerdict === 'Auto-Pass') {
-              verdictEl.innerHTML = '<i data-lucide="check-circle" style="width: 20px; height: 20px;"></i> Auto-Pass Selected';
-              verdictEl.style.color = 'var(--accent-success)';
-            } else if (result.recruiterVerdict === 'Manual Review') {
-              verdictEl.innerHTML = '<i data-lucide="help-circle" style="width: 20px; height: 20px;"></i> Manual Review Queue';
-              verdictEl.style.color = 'var(--accent-warning)';
-            } else {
-              verdictEl.innerHTML = '<i data-lucide="x-circle" style="width: 20px; height: 20px;"></i> Auto-Reject Triggered';
-              verdictEl.style.color = 'var(--accent-danger)';
-            }
-            lucide.createIcons();
+        renderMetrics(docAvg, testAvg, commitAvg, collab, pqs, allDocC, allTestD, allCommitD, repos.slice(0, limit));
+        renderLanguageChart(langMap);
+        renderStackTags(devStack);
+        renderDiagnosticPlan(docAvg, testAvg, commitAvg, allDocC, devStack);
+        renderRepoList(repoResults);
+        renderOSR(devStack);
+        loadHistory();
 
-            // Dynamic matching list update
-            const roadmapEl = document.getElementById('roadmap-items');
-            let roadmapHTML = '';
-            result.matches.forEach((match, idx) => {
-              const colors = idx === 0 ? ['var(--accent-primary)', 'rgba(99, 102, 241, 0.1)'] : 
-                             (idx === 1 ? ['var(--accent-secondary)', 'rgba(6, 182, 212, 0.1)'] : ['var(--accent-warning)', 'rgba(245, 158, 11, 0.1)']);
-              
-              roadmapHTML += `
-                <div style="display: flex; gap: 1rem; border-bottom: ${idx < result.matches.length - 1 ? '1px solid var(--border-color)' : 'none'}; padding-bottom: 1rem; align-items: flex-start; margin-top: ${idx > 0 ? '1rem' : '0'}">
-                  <div style="background: ${colors[1]}; border: 1px dashed ${colors[0]}; border-radius: 8px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                    <span style="font-weight: 700; color: ${colors[0]};">${idx + 1}</span>
-                  </div>
-                  <div style="flex-grow: 1;">
-                    <h4 style="font-size: 0.95rem; margin-bottom: 0.25rem; display: flex; justify-content: space-between; align-items: center;">
-                      <span>Target Repository: <strong>${match.name}</strong></span>
-                      <span class="match-pill">${match.matchPercentage}% Match</span>
-                    </h4>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 0.25rem;">
-                      ${match.description}
-                    </p>
-                    <p style="font-size: 0.8rem; color: var(--text-muted);">
-                      <strong>Missing Skills:</strong> ${match.missingSkills.length > 0 ? match.missingSkills.join(', ') : 'None! Ready to contribute.'}
-                    </p>
-                  </div>
-                </div>
-              `;
+        statusBar.style.width = '100%';
+        statusBar.style.background = 'var(--accent-green-text)';
+        statusText.textContent = `Completed — ${repoResults.length} repositories evaluated (${apiCallsUsed} API requests). Stored in SQLite database.`;
+
+      } catch (err) {
+        statusText.textContent = `Error: ${err.message}`;
+        statusBar.style.width = '100%';
+        statusBar.style.background = 'var(--accent-red)';
+      }
+      scanBtn.disabled = false;
+    }
+
+    function renderStackTags(devStack) {
+      if (!devStack.length) {
+        document.getElementById('stack-tags').innerHTML = '<span style="font-size:12px;color:var(--text-muted);">No frameworks detected.</span>';
+        return;
+      }
+      let html = '';
+      devStack.forEach(item => {
+        html += `<span class="badge badge-blue" style="font-size:11.5px;padding:3px 8px;">${item}</span>`;
+      });
+      document.getElementById('stack-tags').innerHTML = html;
+    }
+
+    function renderDiagnosticPlan(docAvg, testAvg, commitAvg, allDocC, devStack) {
+      const issues = [];
+      if (docAvg < 60) issues.push('• <strong>Documentation Gap:</strong> Missing structured API endpoint references or installation guides in evaluated repositories.');
+      if (testAvg < 40) issues.push('• <strong>Testing Deficit:</strong> Low test file ratio. Recommend introducing unit test runners (Jest, Pytest, Mocha) to improve repository confidence.');
+      if (commitAvg < 50) issues.push('• <strong>Version Control Hygiene:</strong> Detected generic commit messages. Recommend adopting <code>Conventional Commits</code> (e.g. <code>feat:</code>, <code>fix:</code>).');
+      if (issues.length === 0) issues.push('• <strong>Excellent Engineering Standards:</strong> All evaluated repositories demonstrate solid test coverage, structured documentation, and disciplined commits.');
+      
+      document.getElementById('diagnostic-plan').innerHTML = issues.join('<br>');
+    }
+
+    function renderMetrics(doc, test, commit, collab, pqs, docC, testD, commitD, repos) {
+      document.getElementById('m-doc').textContent = doc + '%';
+      document.getElementById('bar-doc').style.width = doc + '%';
+      document.getElementById('m-test').textContent = test + '%';
+      document.getElementById('bar-test').style.width = test + '%';
+      document.getElementById('m-commit').textContent = commit + '%';
+      document.getElementById('bar-commit').style.width = commit + '%';
+      document.getElementById('m-collab').textContent = collab + '%';
+      document.getElementById('bar-collab').style.width = collab + '%';
+
+      const wr = docC.filter(d=>d.checks.exists).length, wi = docC.filter(d=>d.checks.hasInstall).length;
+      const wu = docC.filter(d=>d.checks.hasUsage).length, wco = docC.filter(d=>d.checks.codeBlocks).length;
+      document.getElementById('doc-details').textContent = `${wr}/${docC.length} with README · ${wi} installation · ${wu} usage · ${wco} code blocks`;
+
+      const tf = testD.reduce((s,t)=>s+t.testFiles,0), sf = testD.reduce((s,t)=>s+t.sourceFiles,0);
+      document.getElementById('test-details').textContent = `${tf} test files across ${sf} source code files (avg ratio: ${sf>0?Math.round(tf/sf*100):0}%)`;
+
+      const tg = commitD.reduce((s,c)=>s+c.good,0), ta = commitD.reduce((s,c)=>s+c.total,0);
+      const ac = commitD.length>0 ? Math.round(commitD.reduce((s,c)=>s+c.conventionalPct,0)/commitD.length) : 0;
+      document.getElementById('commit-details').textContent = `${tg}/${ta} valid commit messages · ${ac}% conventional commit format`;
+
+      const ts = repos.reduce((s,r)=>s+r.stargazers_count,0), tfk = repos.reduce((s,r)=>s+r.forks_count,0);
+      document.getElementById('collab-details').textContent = `${ts.toLocaleString()} stars · ${tfk.toLocaleString()} forks · log-normalized`;
+
+      document.getElementById('lbl-pqs').textContent = pqs;
+      document.getElementById('radial-pqs').style.strokeDashoffset = 339.29 - (pqs/100)*339.29;
+
+      let v, c, d, t;
+      if (pqs>=85) { v='Tier 1 (High Quality)'; c='var(--accent-green-text)'; d='Passes rigorous open-source and ATS thresholds.'; t='Tier 1 — Production Ready'; }
+      else if (pqs>=65) { v='Tier 2 (Standard)'; c='var(--accent-blue)'; d='Satisfies baseline open-source readiness standards.'; t='Tier 2 — Standard Contributor'; }
+      else if (pqs>=45) { v='Tier 3 (Developing)'; c='var(--accent-amber)'; d='Moderate portfolio quality. Documentation/tests recommended.'; t='Tier 3 — Junior / Needs Review'; }
+      else { v='Below Baseline'; c='var(--accent-red)'; d='Below standard benchmark thresholds. Documentation/tests missing.'; t='Tier 4 — Unverified Codebase'; }
+      
+      document.getElementById('recruiter-status').textContent = v;
+      document.getElementById('recruiter-status').style.color = c;
+      document.getElementById('recruiter-desc').textContent = d;
+      document.getElementById('tier-placement').textContent = t;
+      document.getElementById('tier-placement').style.color = c;
+    }
+
+    function renderLanguageChart(langMap) {
+      const sorted = Object.entries(langMap).sort((a,b)=>b[1]-a[1]);
+      langChart.data.labels = sorted.map(e=>e[0]);
+      langChart.data.datasets[0].data = sorted.map(e=>e[1]);
+      langChart.data.datasets[0].backgroundColor = sorted.map(e=>LANG_COLORS[e[0]]||'#6e7681');
+      langChart.update('none');
+    }
+
+    function renderRepoList(repos) {
+      if (!repos.length) { document.getElementById('repo-list').innerHTML = '<p style="text-align:center;color:var(--text-muted);font-size:12px;">No repositories evaluated.</p>'; return; }
+      let h = '';
+      repos.forEach(r => {
+        h += `<div class="repo-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.3rem;">
+            <div><a href="${r.url}" target="_blank" style="font-weight:600;font-size:13px;color:var(--accent-blue);text-decoration:none;">${r.name}</a> <span class="lang-tag">${r.language}</span> <span class="badge" style="font-size:10px;">License: ${r.license}</span> <span class="badge" style="font-size:10px;">Modularity Depth: L${r.maxDepth}</span></div>
+            <div style="font-size:11.5px;color:var(--text-muted);font-family:var(--font-mono);">${r.stars} stars · ${r.forks} forks</div>
+          </div>
+          <p style="font-size:12px;color:var(--text-secondary);margin-bottom:0.5rem;">${r.description}</p>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.4rem;font-size:11.5px;">
+            <div style="padding:0.3rem 0.5rem;background:var(--bg-subtle);border-radius:4px;border:1px solid var(--border-muted);">
+              <span style="color:var(--text-muted);">Documentation:</span> <strong class="mono-text" style="color:var(--text-primary);">${r.docScore}%</strong>
+            </div>
+            <div style="padding:0.3rem 0.5rem;background:var(--bg-subtle);border-radius:4px;border:1px solid var(--border-muted);">
+              <span style="color:var(--text-muted);">Testing Ratio:</span> <strong class="mono-text" style="color:var(--text-primary);">${r.testScore}%</strong> (${r.testFiles}/${r.sourceFiles})
+            </div>
+            <div style="padding:0.3rem 0.5rem;background:var(--bg-subtle);border-radius:4px;border:1px solid var(--border-muted);">
+              <span style="color:var(--text-muted);">Commit Quality:</span> <strong class="mono-text" style="color:var(--text-primary);">${r.commitScore}%</strong>
+            </div>
+          </div>
+        </div>`;
+      });
+      document.getElementById('repo-list').innerHTML = h;
+    }
+
+    function renderOSR(devStack) {
+      const matches = TARGET_REPOS.map(repo => {
+        const j = jaccardSimilarity(devStack, repo.reqs);
+        const matchPct = Math.round(j * 100);
+        const overlap = devStack.filter(l => repo.reqs.includes(l));
+        const missing = repo.reqs.filter(l => !devStack.includes(l));
+        return { ...repo, matchPct, overlap, missing };
+      }).sort((a,b) => b.matchPct - a.matchPct);
+
+      let h = '';
+      matches.forEach((m, i) => {
+        const badgeClass = m.matchPct>=60 ? 'badge-green' : (m.matchPct>=30 ? 'badge-amber' : 'badge-red');
+        let resourceHtml = '';
+        if (m.missing.length > 0) {
+          m.missing.forEach(lang => {
+            const resources = LEARNING_RESOURCES[lang] || [];
+            resources.forEach(r => {
+              resourceHtml += `<a href="${r.url}" target="_blank" class="resource-link">Ref: ${r.name}</a>`;
             });
-            roadmapEl.innerHTML = roadmapHTML;
-
-            // Sync chart visual profiles matching JS updates
-            skillsChart.data.datasets[0].data = [readme, (readme + collab)/2, commit, test];
-            skillsChart.update();
-          }
-        } catch (err) {
-          console.warn('Scoring API server is unreachable. Running local calculation fallback...', err);
-          
-          // Local fallback calculation logic
-          const pqs = Math.round((readme * 0.4) + (test * 0.3) + (commit * 0.3));
-          document.getElementById('lbl-pqs').innerText = pqs;
-          
-          const circle = document.getElementById('radial-pqs');
-          const circumference = 364.4;
-          const offset = circumference - (pqs / 100) * circumference;
-          circle.style.strokeDashoffset = offset;
-
-          const verdictEl = document.getElementById('recruiter-status');
-          if (pqs >= 65) {
-            verdictEl.innerHTML = '<i data-lucide="check-circle" style="width: 20px; height: 20px;"></i> Auto-Pass Selected';
-            verdictEl.style.color = 'var(--accent-success)';
-          } else if (pqs >= 45) {
-            verdictEl.innerHTML = '<i data-lucide="help-circle" style="width: 20px; height: 20px;"></i> Manual Review Queue';
-            verdictEl.style.color = 'var(--accent-warning)';
-          } else {
-            verdictEl.innerHTML = '<i data-lucide="x-circle" style="width: 20px; height: 20px;"></i> Auto-Reject Triggered';
-            verdictEl.style.color = 'var(--accent-danger)';
-          }
-          lucide.createIcons();
-
-          // Sync chart visual profiles matching JS updates
-          skillsChart.data.datasets[0].data = [readme, (readme + collab)/2, commit, test];
-          skillsChart.update();
-        } finally {
-          renderPending = false;
+          });
         }
+        h += `<div style="padding:0.6rem 0;${i<matches.length-1?'border-bottom:1px solid var(--border-muted);':''}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.2rem;">
+            <strong style="font-size:13px;color:var(--text-primary);">${m.name} <span style="font-weight:400;color:var(--text-muted);font-size:11.5px;">(${m.difficulty})</span></strong>
+            <span class="badge ${badgeClass}" style="font-family:var(--font-mono);">${m.matchPct}% Jaccard</span>
+          </div>
+          <div class="gap-bar">
+            <div class="gap-bar-you" style="width:${Math.max(m.matchPct,5)}%;">${m.overlap.length?m.overlap.join(', '):''}</div>
+            <div class="gap-bar-target" style="width:${Math.max(100-m.matchPct,5)}%;">${m.missing.length?'Gap: '+m.missing.join(', '):'Ready'}</div>
+          </div>
+          <div style="font-size:11.5px;color:var(--text-secondary);margin-top:0.25rem;">
+            ${m.missing.length===0 ? '<span style="color:var(--accent-green-text);font-weight:500;">Stack requirements satisfied.</span>' : 'Missing competencies: <span style="color:var(--accent-amber);">' + m.missing.join(', ') + '</span>'}
+          </div>
+          ${resourceHtml ? `<div style="margin-top:0.25rem;">${resourceHtml}</div>` : ''}
+        </div>`;
       });
     }
 
-    function handleZipDrop(event) {
-      event.preventDefault();
-      const dropZone = document.getElementById('drop-zone');
-      dropZone.style.borderColor = 'rgba(255,255,255,0.15)';
-      
-      const files = event.dataTransfer.files;
-      if (files.length > 0 && files[0].name.endsWith('.zip')) {
-        dropZone.innerHTML = `
-          <i class="lucide-file-archive" data-lucide="file-archive" style="width: 36px; height: 36px; color: var(--accent-success); margin-bottom: 0.75rem;"></i>
-          <p style="font-size: 0.85rem; font-weight: 500; color: var(--accent-success);">${files[0].name}</p>
-          <span style="font-size: 0.75rem; color: var(--text-secondary);">Analyzing file headers...</span>
-        `;
-        lucide.createIcons();
-        
-        // Mocking local zip metric parsing offsets
-        setTimeout(() => {
-          document.getElementById('slide-readme').value = 90; // ZIP projects usually have a README
-          document.getElementById('slide-test').value = 60; // ZIP codebase contains tests folder
-          document.getElementById('slide-commit').value = 85; // Clean Git headers
-          updateLabel('readme', 90);
-          updateLabel('test', 60);
-          updateLabel('commit', 85);
-          updateMetrics();
-        }, 1200);
-      }
+    async function loadHistory() {
+      try {
+        const res = await fetch('/api/history');
+        if (!res.ok) return;
+        const rows = await res.json();
+        if (!rows.length) { document.getElementById('history-rows').innerHTML = '<p style="font-size:12px;color:var(--text-muted);padding:0.75rem 0;text-align:center;">No records stored.</p>'; return; }
+        let h = '';
+        rows.forEach(r => {
+          const date = new Date(r.scanned_at).toLocaleDateString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+          h += `<div class="history-row">
+            <span style="font-weight:600;color:var(--accent-blue);">${r.username}</span>
+            <span class="mono-text" style="font-weight:700;">${r.pqs_score}</span>
+            <span class="mono-text">${r.doc_score}%</span><span class="mono-text">${r.test_score}%</span>
+            <span class="mono-text">${r.commit_score}%</span><span class="mono-text">${r.collab_score}%</span>
+            <span style="color:var(--text-muted);font-size:11px;">${date}</span>
+          </div>`;
+        });
+        document.getElementById('history-rows').innerHTML = h;
+      } catch(e) {}
     }
 
-    function simulateScan() {
-      // Simulate API scan activity
-      const userVal = document.getElementById('github-user').value;
-      if (!userVal) return;
-      
-      const scanBtn = document.querySelector('button[onclick="simulateScan()"]');
-      scanBtn.style.animation = 'spin 1s linear infinite';
-      
-      // Reset variables with randomized values to simulate a real scan
-      setTimeout(() => {
-        scanBtn.style.animation = 'none';
-        document.getElementById('slide-readme').value = Math.floor(Math.random() * 40) + 55;
-        document.getElementById('slide-test').value = Math.floor(Math.random() * 60) + 20;
-        document.getElementById('slide-commit').value = Math.floor(Math.random() * 50) + 40;
-        document.getElementById('slide-collab').value = Math.floor(Math.random() * 50) + 30;
-        updateLabel('readme', document.getElementById('slide-readme').value);
-        updateLabel('test', document.getElementById('slide-test').value);
-        updateLabel('commit', document.getElementById('slide-commit').value);
-        updateLabel('collab', document.getElementById('slide-collab').value);
-        updateMetrics();
-      }, 1000);
+    async function runBenchmark() {
+      const btn = document.getElementById('bench-btn');
+      btn.disabled = true;
+      document.getElementById('bench-icon').textContent = 'Evaluating Suite...';
+      let h = '', results = [];
+      for (let i = 0; i < BENCHMARK_REPOS.length; i++) {
+        const b = BENCHMARK_REPOS[i];
+        try {
+          let ds=0; try{const r=await ghFetch(`https://api.github.com/repos/${b.owner}/${b.repo}/readme`);if(r.ok){const d=await r.json();ds=scoreReadmeContent(atob(d.content.replace(/\n/g,''))).score;}}catch(e){}
+          let ts=0; try{const r=await ghFetch(`https://api.github.com/repos/${b.owner}/${b.repo}/git/trees/HEAD?recursive=1`);if(r.ok){const d=await r.json();ts=scoreTestRatio(d.tree||[]).score;}}catch(e){}
+          let cs=0; try{const r=await ghFetch(`https://api.github.com/repos/${b.owner}/${b.repo}/commits?per_page=20`);if(r.ok){const d=await r.json();cs=scoreCommitMessages(d).score;}}catch(e){}
+          let co=0; try{const r=await ghFetch(`https://api.github.com/repos/${b.owner}/${b.repo}`);if(r.ok){const d=await r.json();co=scoreCommunity([d]);}}catch(e){}
+          const pqs = Math.round(ds*0.35+ts*0.30+cs*0.20+co*0.15);
+          const match = (pqs>=60&&b.tierNum>=3)||(pqs<50&&b.tierNum<=1)||(pqs>=45&&pqs<60&&b.tierNum===2);
+          results.push({match});
+          h += `<div class="benchmark-row">
+            <span><strong>${b.owner}/${b.repo}</strong> <span style="font-size:11px;color:var(--text-muted);">(${b.reason})</span></span>
+            <span class="badge">${b.expectedTier}</span>
+            <span class="mono-text" style="font-weight:600;color:var(--accent-blue);">${pqs}</span>
+            <span>${match?'<span class="badge badge-green">PASS</span>':'<span class="badge badge-red">FAIL</span>'}</span>
+          </div>`;
+        } catch(e) { h += `<div class="benchmark-row"><span>${b.owner}/${b.repo}</span><span>—</span><span>ERR</span><span>—</span></div>`; }
+      }
+      const acc = results.filter(r=>r.match).length;
+      h += `<div style="margin-top:0.75rem;padding:0.6rem 0.8rem;background:var(--bg-canvas);border:1px solid var(--border-default);border-radius:4px;font-size:12px;">
+        <strong>Benchmark Result:</strong> <span style="font-weight:600;color:var(--accent-green-text);">${acc}/${results.length} test cases passed</span> (${Math.round(acc/results.length*100)}% tier categorization accuracy).
+      </div>`;
+      document.getElementById('bench-rows').innerHTML = h;
+      document.getElementById('bench-icon').textContent = 'Run Control Suite';
+      btn.disabled = false;
     }
 
-    // Trigger initial calculation load
-    window.addEventListener('DOMContentLoaded', () => {
-      updateMetrics();
-    });
-
-
-    // Add spinner keyframes keying spin animation
-    const styleSheet = document.createElement("style");
-    styleSheet.innerText = `
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-    `;
-    document.head.appendChild(styleSheet);
+    document.getElementById('github-user').addEventListener('keydown', e => { if (e.key === 'Enter') analyzeGitHub(); });
+    loadHistory();
   </script>
 </body>
 </html>
