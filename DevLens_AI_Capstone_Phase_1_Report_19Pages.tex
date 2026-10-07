@@ -16,11 +16,12 @@
 \usepackage{fancyhdr}
 \usepackage{caption}
 
-% --- Page Numbering on Top Center as per Reference PDF ---
+% --- Page Numbering on Bottom Center ---
 \pagestyle{fancy}
 \fancyhf{}
-\chead{\thepage}
+\cfoot{\thepage}
 \renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
 
 % --- Section Headings Formatting ---
 \titleformat{\section}{\fontsize{14pt}{16pt}\bfseries}{\thesection.}{0.5em}{}
